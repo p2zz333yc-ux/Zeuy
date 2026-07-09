@@ -13,13 +13,15 @@ const ASSETS = {
   bottomRight: `${HF_CDN}/hf_20260709_233425_29b5aefb-2775-4422-9c60-122b6e688c78.png`,
 }
 
+const BASE = import.meta.env.BASE_URL
+
 const FALLBACKS = {
-  avatar: '/fallbacks/avatar.svg',
-  product: '/fallbacks/product.svg',
-  video: '/fallbacks/video.svg',
-  bottomLeft: '/fallbacks/bottom-left.svg',
-  bottomCenter: '/fallbacks/bottom-center.svg',
-  bottomRight: '/fallbacks/bottom-right.svg',
+  avatar: `${BASE}fallbacks/avatar.svg`,
+  product: `${BASE}fallbacks/product.svg`,
+  video: `${BASE}fallbacks/video.svg`,
+  bottomLeft: `${BASE}fallbacks/bottom-left.svg`,
+  bottomCenter: `${BASE}fallbacks/bottom-center.svg`,
+  bottomRight: `${BASE}fallbacks/bottom-right.svg`,
 }
 
 const LINE_1 = [

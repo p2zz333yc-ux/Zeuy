@@ -84,7 +84,7 @@ export default function Header() {
 
           <SafeImg
             src={AVATAR_URL}
-            fallback="/fallbacks/avatar.svg"
+            fallback={`${import.meta.env.BASE_URL}fallbacks/avatar.svg`}
             alt="Profil"
             className="hidden h-10 w-10 rounded-full object-cover sm:block"
           />
