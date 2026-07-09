@@ -1,231 +1,313 @@
-import { Suspense, lazy } from 'react'
+import { ArrowRight, ArrowUpRight, Play, Plus, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import Reveal from '../components/Reveal'
-import SectionHeading from '../components/SectionHeading'
-import ProductCard from '../components/ProductCard'
-import Testimonials from '../components/Testimonials'
-import Newsletter from '../components/Newsletter'
-import { products } from '../data/products'
+import SafeImg from '../components/SafeImg'
 
-const HeroScene = lazy(() => import('../components/three/HeroScene'))
+const ASSETS = {
+  avatar: 'https://polo-pecan-73837341.figma.site/_assets/v11/e62173d41f91350a59628e8a9a55ae078a886fb9.png?w=128',
+  product: 'https://polo-pecan-73837341.figma.site/_assets/v11/3e5158dad63d392ade022e81890edc9f54d750bc.png',
+  video: 'https://polo-pecan-73837341.figma.site/_assets/v11/76be6ec3a93a703b15e9cc01e764a4e3f9d7d2c0.png',
+  bottomLeft: 'https://polo-pecan-73837341.figma.site/_assets/v11/8d44b25186ef45a5789c74668fb781cea4e1ff49.png',
+  bottomCenter: 'https://polo-pecan-73837341.figma.site/_assets/v11/96745c4e72ad5c5208e53a885df797fd82cd854a.png?h=1024',
+  bottomRight: 'https://polo-pecan-73837341.figma.site/_assets/v11/81bd2e7a66b58f3d8f3ad78fd1ebf01af8dfdee1.png',
+}
 
-const stats = [
-  { value: '15 000+', label: 'compagnons apaisés' },
-  { value: '4.9 / 5', label: 'note moyenne clients' },
-  { value: '100%', label: 'ingrédients naturels' },
+const FALLBACKS = {
+  avatar: '/fallbacks/avatar.svg',
+  product: '/fallbacks/product.svg',
+  video: '/fallbacks/video.svg',
+  bottomLeft: '/fallbacks/bottom-left.svg',
+  bottomCenter: '/fallbacks/bottom-center.svg',
+  bottomRight: '/fallbacks/bottom-right.svg',
+}
+
+const LINE_1 = [
+  { word: 'Tout', delay: 'delay-200' },
+  { word: 'ce', delay: 'delay-300' },
+  { word: 'que', delay: 'delay-400' },
+]
+const LINE_2 = [
+  { word: 'vos', delay: 'delay-400' },
+  { word: 'animaux', delay: 'delay-500' },
+  { word: 'adorent', delay: 'delay-600', accent: true },
 ]
 
-const benefits = [
-  {
-    title: 'Formules naturelles',
-    text: 'Des ingrédients d’origine naturelle, sélectionnés pour leur douceur et leur efficacité.',
-    icon: '🌿',
-  },
-  {
-    title: 'Validé vétérinaires',
-    text: 'Chaque recette est élaborée avec des vétérinaires comportementalistes.',
-    icon: '🩺',
-  },
-  {
-    title: 'Sans stress ajouté',
-    text: 'Zéro parfum agressif, zéro ingrédient controversé : juste de la sérénité.',
-    icon: '🕊️',
-  },
-  {
-    title: 'Livraison douce',
-    text: 'Emballages recyclés et livraison neutre en carbone partout en France.',
-    icon: '📦',
-  },
-]
-
-const steps = [
-  {
-    n: '01',
-    title: 'Faites le point',
-    text: 'Répondez à 3 questions sur les besoins de votre animal : stress, articulations, sommeil.',
-  },
-  {
-    n: '02',
-    title: 'Recevez vos rituels',
-    text: 'Nous vous suggérons une sélection de soins adaptés à son âge et son tempérament.',
-  },
-  {
-    n: '03',
-    title: 'Observez la sérénité',
-    text: 'Intégrez les produits en douceur et suivez les progrès semaine après semaine.',
-  },
-]
-
-export default function Home() {
-  const featured = products.slice(0, 4)
-
+function HeroHeadingWords({ words }: { words: typeof LINE_1 }) {
   return (
-    <div>
-      <section className="relative flex min-h-[92svh] items-center overflow-hidden pt-24">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_0%,_theme(colors.sage.100),_transparent)]" />
-        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-8 px-6 py-12 md:grid-cols-2 md:py-0">
-          <div>
-            <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-sage-700 shadow-sm">
-                🐾 Bien-être animal, version zen
-              </span>
-            </Reveal>
-            <Reveal delay={0.08}>
-              <h1 className="mt-6 text-balance font-display text-4xl font-medium leading-[1.05] text-ink sm:text-5xl md:text-6xl">
-                Le calme se cultive, <span className="text-sage-600">patte</span> après patte.
-              </h1>
-            </Reveal>
-            <Reveal delay={0.16}>
-              <p className="mt-6 max-w-md text-balance text-lg leading-relaxed text-ink-soft">
-                Zenimo conçoit des soins naturels — aromathérapie douce, compléments et rituels sensoriels — pour
-                apaiser le quotidien de votre chien ou de votre chat.
-              </p>
-            </Reveal>
-            <Reveal delay={0.24}>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link
-                  to="/boutique"
-                  className="rounded-full bg-sage-600 px-7 py-3.5 text-sm font-semibold text-cream shadow-soft transition-transform hover:-translate-y-0.5 hover:bg-sage-700"
-                >
-                  Découvrir la boutique
-                </Link>
-                <a
-                  href="#bienfaits"
-                  className="rounded-full border border-sage-300 px-7 py-3.5 text-sm font-semibold text-ink-soft transition-colors hover:border-sage-500 hover:text-sage-700"
-                >
-                  Notre approche
-                </a>
-              </div>
-            </Reveal>
-            <Reveal delay={0.32}>
-              <div className="mt-12 grid max-w-md grid-cols-3 gap-4 border-t border-sage-200/70 pt-6">
-                {stats.map((s) => (
-                  <div key={s.label}>
-                    <p className="font-display text-2xl font-medium text-ink">{s.value}</p>
-                    <p className="mt-1 text-xs leading-snug text-ink-soft">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-            </Reveal>
-          </div>
+    <>
+      {words.map(({ word, delay, accent }: (typeof LINE_2)[number]) => (
+        <span key={word} className={`inline-block animate-word-pop ${delay} ${accent ? 'text-clay-500' : ''}`}>
+          {word}
+        </span>
+      ))}
+    </>
+  )
+}
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="relative h-[420px] sm:h-[520px]"
-          >
-            <Suspense fallback={<div className="h-full w-full animate-pulse rounded-[3rem] bg-sage-100" />}>
-              <HeroScene />
-            </Suspense>
-          </motion.div>
-        </div>
-
-        <motion.div
-          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs text-ink-soft md:flex"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+function ProductMiniCard({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className="group">
+      <div
+        className="relative overflow-hidden rounded-2xl shadow-card"
+        style={{ aspectRatio: compact ? '1/1' : '260/257' }}
+      >
+        <SafeImg src={ASSETS.product} fallback={FALLBACKS.product} alt="Maison Cosy pour Chat" className="h-full w-full object-cover" />
+        <Link
+          to="/produit/maison-cosy-chat"
+          aria-label="Voir la Maison Cosy pour Chat"
+          className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full bg-sage-800 text-white transition-all hover:scale-110 hover:bg-sage-700"
         >
-          <span>Défilez</span>
-          <span className="h-8 w-[1px] bg-ink-soft/40" />
-        </motion.div>
-      </section>
+          <ArrowUpRight size={16} />
+        </Link>
+      </div>
+      <p className="mt-2 text-gray-700" style={{ fontSize: 'clamp(12px, 1vw, 15px)' }}>
+        Maison Cosy pour Chat
+      </p>
+      <p className="font-semibold text-sage-800" style={{ fontSize: 'clamp(13px, 1.1vw, 17px)' }}>
+        49,99 €
+      </p>
+    </div>
+  )
+}
 
-      <div className="overflow-hidden border-y border-sage-100 bg-cream-dark/50 py-4">
-        <div className="flex w-max animate-marquee gap-16 text-sm font-medium uppercase tracking-widest text-ink-soft/70">
-          {[...Array(2)].map((_, dup) => (
-            <div key={dup} className="flex shrink-0 gap-16">
-              {['Recommandé par 500+ vétérinaires', '100% naturel', 'Fabriqué en France', 'Sans cruauté animale', 'Livraison offerte dès 39€'].map(
-                (t) => (
-                  <span key={t} className="flex items-center gap-3">
-                    <span className="h-1.5 w-1.5 rounded-full bg-clay-400" /> {t}
-                  </span>
-                ),
-              )}
-            </div>
-          ))}
+function VideoMiniCard({ compact = false }: { compact?: boolean }) {
+  return (
+    <div
+      className="relative overflow-hidden rounded-2xl shadow-card"
+      style={{ aspectRatio: compact ? '3/4' : '177/287' }}
+    >
+      <SafeImg src={ASSETS.video} fallback={FALLBACKS.video} alt="Avis produits en vidéo" className="h-full w-full object-cover" />
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-gradient-to-t from-sage-900/70 to-transparent px-3 pb-3 pt-10 text-center">
+        <button
+          aria-label="Lire la vidéo"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-sage-800 text-white transition-transform hover:scale-110"
+        >
+          <Play size={15} fill="currentColor" className="ml-0.5" />
+        </button>
+        <p className="text-[11px] font-medium leading-snug text-white drop-shadow">
+          Découvrez nos rituels en vidéo sur TikTok et YouTube
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function StatVisitors({ light = true }: { light?: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex items-center">
+        <SafeImg
+          src={ASSETS.avatar}
+          fallback={FALLBACKS.avatar}
+          alt=""
+          className={`h-9 w-9 rounded-full border-2 object-cover ${light ? 'border-white' : 'border-sage-50'}`}
+        />
+        <span
+          className={`-ml-2.5 flex h-9 w-9 items-center justify-center rounded-full border-2 bg-sage-600 text-white ${
+            light ? 'border-white' : 'border-sage-50'
+          }`}
+        >
+          <Plus size={14} />
+        </span>
+      </div>
+      <div className={light ? 'text-white drop-shadow-md' : 'text-ink'}>
+        <p className="font-serif-display text-xl leading-none sm:text-2xl">98K+</p>
+        <p className={`text-[11px] font-medium ${light ? 'text-white/85' : 'text-ink-soft'}`}>compagnons heureux</p>
+      </div>
+    </div>
+  )
+}
+
+function StatRating({ light = true }: { light?: boolean }) {
+  return (
+    <div className={`flex items-center gap-2 ${light ? 'text-white drop-shadow-md' : 'text-ink'}`}>
+      <Star size={20} className="text-clay-400" fill="currentColor" stroke="none" />
+      <p className="font-serif-display text-xl leading-none sm:text-2xl">4.6</p>
+    </div>
+  )
+}
+
+function BottomImages({ maxHeights }: { maxHeights?: [string, string, string] }) {
+  return (
+    <div className="flex w-full items-end">
+      <div className="relative flex-1 animate-photo-reveal delay-700">
+        <SafeImg
+          src={ASSETS.bottomLeft}
+          fallback={FALLBACKS.bottomLeft}
+          alt="Chien détendu"
+          className="block h-auto w-full object-cover"
+          style={maxHeights ? { maxHeight: maxHeights[0] } : undefined}
+        />
+        <div
+          className="absolute animate-scale-in delay-1000"
+          style={{ bottom: 'clamp(20px, 4vh, 50px)', left: 'clamp(16px, 2.5vw, 40px)' }}
+        >
+          <StatVisitors />
         </div>
       </div>
 
-      <section id="bienfaits" className="mx-auto max-w-6xl px-6 py-24">
-        <SectionHeading
-          eyebrow="Pourquoi Zenimo"
-          title="Une approche douce, pensée pour chaque tempérament"
-          subtitle="Nous croyons qu'un animal serein est un animal en confiance. Chaque produit est conçu pour accompagner ce chemin, sans forcer, sans agresser."
+      <div className="relative flex-[1.265] animate-photo-reveal delay-600">
+        <SafeImg
+          src={ASSETS.bottomCenter}
+          fallback={FALLBACKS.bottomCenter}
+          alt="Chat serein"
+          className="block h-auto w-full object-cover"
+          style={maxHeights ? { maxHeight: maxHeights[1] } : undefined}
         />
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {benefits.map((b, i) => (
-            <Reveal key={b.title} delay={i * 0.08}>
-              <div className="group h-full rounded-3xl border border-sage-100 bg-white/60 p-7 shadow-card transition-transform duration-500 hover:-translate-y-1.5">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-2xl transition-transform duration-500 group-hover:rotate-6">
-                  {b.icon}
-                </span>
-                <h3 className="mt-5 font-display text-lg font-medium text-ink">{b.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{b.text}</p>
-              </div>
-            </Reveal>
-          ))}
+        <div
+          className="absolute inset-x-3 flex animate-scale-in flex-col items-center gap-3 text-center delay-1100 sm:gap-4"
+          style={{ bottom: 'clamp(20px, 4vh, 50px)' }}
+        >
+          <h2
+            className="font-serif-display leading-tight text-white drop-shadow-md"
+            style={{ fontSize: 'clamp(18px, 2.2vw, 34px)' }}
+          >
+            Les meilleurs produits
+            <br />
+            pour votre compagnon
+          </h2>
+          <Link
+            to="/boutique"
+            className="flex items-center gap-2 rounded-full bg-clay-500 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:bg-clay-600"
+          >
+            Explorer la boutique
+            <ArrowRight size={15} />
+          </Link>
         </div>
-      </section>
+      </div>
 
-      <section className="mx-auto max-w-6xl px-6 py-24">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <SectionHeading
-            center={false}
-            eyebrow="Sélection"
-            title="Nos produits phares"
-            subtitle="Les rituels préférés de nos 15 000 compagnons à quatre pattes."
-          />
-          <Reveal>
-            <Link
-              to="/boutique"
-              className="hidden rounded-full border border-sage-300 px-6 py-3 text-sm font-semibold text-ink-soft transition-colors hover:border-sage-500 hover:text-sage-700 sm:inline-flex"
-            >
-              Voir toute la boutique →
-            </Link>
-          </Reveal>
+      <div className="relative flex-1 animate-photo-reveal delay-800">
+        <SafeImg
+          src={ASSETS.bottomRight}
+          fallback={FALLBACKS.bottomRight}
+          alt="Chiot joueur"
+          className="block h-auto w-full object-cover"
+          style={maxHeights ? { maxHeight: maxHeights[2] } : undefined}
+        />
+        <div
+          className="absolute animate-scale-in delay-1200"
+          style={{ bottom: 'clamp(20px, 4vh, 50px)', right: 'clamp(16px, 2.5vw, 40px)' }}
+        >
+          <StatRating />
         </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} />
-          ))}
-        </div>
-      </section>
+      </div>
+    </div>
+  )
+}
 
-      <section className="bg-cream-dark/50 py-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <SectionHeading eyebrow="Simple & guidé" title="Comment ça marche" />
-          <div className="relative mt-14 grid gap-10 md:grid-cols-3">
-            <div className="absolute left-0 right-0 top-6 hidden h-px bg-sage-200 md:block" />
-            {steps.map((s, i) => (
-              <Reveal key={s.n} delay={i * 0.12}>
-                <div className="relative text-center md:text-left">
-                  <span className="relative z-10 inline-flex h-12 w-12 items-center justify-center rounded-full bg-sage-600 font-display text-sm font-semibold text-cream">
-                    {s.n}
-                  </span>
-                  <h3 className="mt-5 font-display text-lg font-medium text-ink">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{s.text}</p>
-                </div>
-              </Reveal>
-            ))}
+export default function Home() {
+  return (
+    <section className="relative flex flex-1 flex-col overflow-hidden bg-sage-50">
+      {/* ── Desktop (lg+) ─────────────────────────────── */}
+      <div className="relative hidden flex-1 lg:block">
+        <div className="relative z-[5] px-12 pt-[5.4rem] text-center">
+          <h1
+            className="font-serif-display tracking-tight text-sage-800"
+            style={{ fontSize: 'clamp(60px, 7.5vw, 110px)', lineHeight: 0.95 }}
+          >
+            <span className="block space-x-[0.22em]">
+              <HeroHeadingWords words={LINE_1} />
+            </span>
+            <span className="block space-x-[0.22em]">
+              <HeroHeadingWords words={LINE_2} />
+            </span>
+          </h1>
+        </div>
+
+        <div
+          className="absolute left-12 top-[50px] z-20 animate-slide-in-left delay-600"
+          style={{ width: 'clamp(160px, 14vw, 260px)' }}
+        >
+          <ProductMiniCard />
+        </div>
+
+        <div
+          className="absolute right-12 top-[50px] z-20 animate-slide-in-right delay-700"
+          style={{ width: 'clamp(120px, 10vw, 177px)' }}
+        >
+          <VideoMiniCard />
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          <BottomImages maxHeights={['min(70vh, 55vw)', 'min(85vh, 70vw)', 'min(70vh, 55vw)']} />
+        </div>
+      </div>
+
+      {/* ── Tablet (md → lg) ──────────────────────────── */}
+      <div className="relative hidden flex-1 md:block lg:hidden">
+        <div className="relative z-[5] px-48 pt-16 text-center">
+          <h1 className="font-serif-display text-6xl tracking-tight text-sage-800" style={{ lineHeight: 0.98 }}>
+            <span className="block space-x-[0.22em]">
+              <HeroHeadingWords words={LINE_1} />
+            </span>
+            <span className="block space-x-[0.22em]">
+              <HeroHeadingWords words={LINE_2} />
+            </span>
+          </h1>
+        </div>
+
+        <div className="absolute left-4 top-[80px] z-20 w-[160px] animate-slide-in-left delay-600">
+          <ProductMiniCard />
+        </div>
+
+        <div className="absolute right-4 top-[80px] z-20 w-[120px] animate-slide-in-right delay-700">
+          <VideoMiniCard />
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          <BottomImages maxHeights={['60vh', '75vh', '60vh']} />
+        </div>
+      </div>
+
+      {/* ── Mobile (< md) ─────────────────────────────── */}
+      <div className="flex flex-1 flex-col overflow-hidden md:hidden">
+        <div className="px-4 pt-3 text-center">
+          <h1 className="font-serif-display text-[36px] leading-[1.02] tracking-tight text-sage-800">
+            <span className="block space-x-[0.22em]">
+              <HeroHeadingWords words={LINE_1} />
+            </span>
+            <span className="block space-x-[0.22em]">
+              <HeroHeadingWords words={LINE_2} />
+            </span>
+          </h1>
+          <p className="mt-2 animate-fade-up text-sm text-ink-soft delay-500">
+            Soins naturels, aromathérapie douce et accessoires zen pour chiens et chats.
+          </p>
+          <Link
+            to="/boutique"
+            className="mt-3 inline-flex animate-fade-up items-center gap-2 rounded-full bg-clay-500 px-5 py-2.5 text-sm font-semibold text-white delay-600"
+          >
+            Explorer la boutique
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        <div className="mt-4 flex gap-3 px-4">
+          <div className="flex-1 animate-slide-in-left delay-700">
+            <ProductMiniCard compact />
+          </div>
+          <div className="flex-1 animate-slide-in-right delay-800">
+            <VideoMiniCard compact />
           </div>
         </div>
-      </section>
 
-      <section id="avis" className="mx-auto max-w-6xl px-6 py-24">
-        <SectionHeading
-          eyebrow="Ils témoignent"
-          title="Des compagnons plus sereins, des familles rassurées"
-        />
-        <div className="mt-14">
-          <Testimonials />
+        <div className="mt-4 flex animate-fade-up items-center justify-between px-5 delay-900">
+          <StatVisitors light={false} />
+          <span className="h-8 w-px bg-sage-200" />
+          <StatRating light={false} />
         </div>
-      </section>
 
-      <section className="relative mx-auto max-w-6xl px-6 pb-24">
-        <Newsletter />
-      </section>
-    </div>
+        <div className="mt-auto flex items-end pt-4">
+          <div className="flex-1 animate-photo-reveal delay-800">
+            <SafeImg src={ASSETS.bottomLeft} fallback={FALLBACKS.bottomLeft} alt="Chien détendu" className="block h-auto w-full" />
+          </div>
+          <div className="flex-[1.265] animate-photo-reveal delay-700">
+            <SafeImg src={ASSETS.bottomCenter} fallback={FALLBACKS.bottomCenter} alt="Chat serein" className="block h-auto w-full" />
+          </div>
+          <div className="flex-1 animate-photo-reveal delay-900">
+            <SafeImg src={ASSETS.bottomRight} fallback={FALLBACKS.bottomRight} alt="Chiot joueur" className="block h-auto w-full" />
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }

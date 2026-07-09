@@ -2,7 +2,7 @@
 
 Zenimo est un site e-commerce vitrine pour des produits de bien-être naturels destinés aux chiens et chats : soins, aromathérapie, compléments alimentaires, jouets zen et accessoires.
 
-Construit avec React, TypeScript, Vite et Tailwind CSS v4. Les animations et transitions 3D reposent sur Three.js (via React Three Fiber et Drei) pour les scènes 3D (héros animé, showcase produit, éléments décoratifs) et sur Framer Motion pour les transitions de page en perspective 3D, les tilts de cartes produits et les révélations au scroll. Le défilement fluide est assuré par Lenis.
+Construit avec React, TypeScript, Vite et Tailwind CSS v4. La page d'accueil est un hero plein écran (sans défilement) animé en CSS : titres « word pop », cartes latérales produit/vidéo, bandeau de trois photos avec statistiques et bouton d'appel à l'action, décliné en trois breakpoints (mobile, tablette, desktop). Les fiches produits conservent leurs scènes 3D Three.js (via React Three Fiber et Drei), les transitions de page en perspective 3D et les tilts de cartes reposent sur Framer Motion, et le défilement fluide sur Lenis. Les visuels du hero sont chargés depuis un CDN externe avec un repli SVG local automatique en cas d'indisponibilité.
 
 ## Démarrer
 

@@ -10,6 +10,7 @@ const variants = {
 export default function PageTransition({ children }: { children: ReactNode }) {
   return (
     <motion.div
+      className="flex flex-1 flex-col"
       variants={variants}
       initial="initial"
       animate="animate"

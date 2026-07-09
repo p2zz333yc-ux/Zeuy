@@ -18,7 +18,7 @@ export default function ProductDetail() {
   const related = products.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 3)
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24 pt-32">
+    <div className="mx-auto max-w-6xl px-6 pb-24 pt-10">
       <Reveal>
         <div className="flex flex-wrap items-center gap-2 text-sm text-ink-soft">
           <Link to="/boutique" className="hover:text-sage-700">Boutique</Link>

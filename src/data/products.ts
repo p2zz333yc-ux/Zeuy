@@ -126,6 +126,21 @@ export const products: Product[] = [
     species: ['Chien', 'Chat'],
   },
   {
+    id: '9',
+    slug: 'maison-cosy-chat',
+    name: 'Maison Cosy pour Chat',
+    category: 'Accessoires',
+    price: 49.99,
+    tagline: 'Un refuge douillet pour des siestes sereines',
+    description:
+      'Nichée dans un tissu bouclette ultra-doux, cette maison cocon offre à votre chat un refuge à sa taille où il se sent protégé. Sa structure moelleuse garde la chaleur et son coussin réversible se lave en machine.',
+    benefits: ['Tissu bouclette certifié Oeko-Tex', 'Coussin réversible lavable', 'Structure stable et moelleuse'],
+    color: '#a3c090',
+    shape: 'jar',
+    badge: 'Nouveau',
+    species: ['Chat'],
+  },
+  {
     id: '8',
     slug: 'diffuseur-ambiance-zen',
     name: 'Diffuseur Ambiance Zen',

@@ -23,7 +23,7 @@ export default function Contact() {
   const [sent, setSent] = useState(false)
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24 pt-32">
+    <div className="mx-auto max-w-6xl px-6 pb-24 pt-10">
       <div className="grid gap-14 md:grid-cols-2">
         <div>
           <Reveal>

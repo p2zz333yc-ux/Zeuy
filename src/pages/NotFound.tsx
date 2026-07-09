@@ -3,7 +3,7 @@ import Reveal from '../components/Reveal'
 
 export default function NotFound() {
   return (
-    <div className="mx-auto flex min-h-[70svh] max-w-2xl flex-col items-center justify-center px-6 pt-24 text-center">
+    <div className="mx-auto flex min-h-[70svh] max-w-2xl flex-col items-center justify-center px-6 pt-10 text-center">
       <Reveal>
         <span className="text-6xl">🐾</span>
         <h1 className="mt-6 font-display text-4xl font-medium text-ink">Page introuvable</h1>

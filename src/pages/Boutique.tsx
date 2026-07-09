@@ -18,7 +18,7 @@ export default function Boutique() {
   )
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24 pt-32">
+    <div className="mx-auto max-w-6xl px-6 pb-24 pt-10">
       <Reveal className="max-w-2xl">
         <span className="inline-flex items-center gap-2 rounded-full bg-sage-100 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-sage-700">
           Boutique
