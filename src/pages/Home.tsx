@@ -2,13 +2,15 @@ import { ArrowRight, ArrowUpRight, Play, Plus, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import SafeImg from '../components/SafeImg'
 
+const HF_CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_3G8WFZ16pJpe7wOuL9i74mMYvEc'
+
 const ASSETS = {
-  avatar: 'https://polo-pecan-73837341.figma.site/_assets/v11/e62173d41f91350a59628e8a9a55ae078a886fb9.png?w=128',
-  product: 'https://polo-pecan-73837341.figma.site/_assets/v11/3e5158dad63d392ade022e81890edc9f54d750bc.png',
-  video: 'https://polo-pecan-73837341.figma.site/_assets/v11/76be6ec3a93a703b15e9cc01e764a4e3f9d7d2c0.png',
-  bottomLeft: 'https://polo-pecan-73837341.figma.site/_assets/v11/8d44b25186ef45a5789c74668fb781cea4e1ff49.png',
-  bottomCenter: 'https://polo-pecan-73837341.figma.site/_assets/v11/96745c4e72ad5c5208e53a885df797fd82cd854a.png?h=1024',
-  bottomRight: 'https://polo-pecan-73837341.figma.site/_assets/v11/81bd2e7a66b58f3d8f3ad78fd1ebf01af8dfdee1.png',
+  avatar: `${HF_CDN}/hf_20260709_233632_e6a2367f-49e2-475a-8b7f-9fb77ab8da31_min.webp`,
+  product: `${HF_CDN}/hf_20260709_233436_ce3aeab3-c67a-45ba-97b2-360c247007bf_min.webp`,
+  video: `${HF_CDN}/hf_20260709_233449_57b6cd6e-4364-4cb5-97ed-b24859e3c24d_min.webp`,
+  bottomLeft: `${HF_CDN}/hf_20260709_233413_1aecfcb4-9e0d-4a3a-836b-f6b88a0c753f.png`,
+  bottomCenter: `${HF_CDN}/hf_20260709_233418_09929955-a522-43a0-9ce6-8b973db8884c.png`,
+  bottomRight: `${HF_CDN}/hf_20260709_233425_29b5aefb-2775-4422-9c60-122b6e688c78.png`,
 }
 
 const FALLBACKS = {
@@ -137,6 +139,7 @@ function BottomImages({ maxHeights }: { maxHeights?: [string, string, string] })
           className="block h-auto w-full object-cover"
           style={maxHeights ? { maxHeight: maxHeights[0] } : undefined}
         />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-sage-900/65 via-sage-900/20 to-transparent" />
         <div
           className="absolute animate-scale-in delay-1000"
           style={{ bottom: 'clamp(20px, 4vh, 50px)', left: 'clamp(16px, 2.5vw, 40px)' }}
@@ -153,6 +156,7 @@ function BottomImages({ maxHeights }: { maxHeights?: [string, string, string] })
           className="block h-auto w-full object-cover"
           style={maxHeights ? { maxHeight: maxHeights[1] } : undefined}
         />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-sage-900/65 via-sage-900/20 to-transparent" />
         <div
           className="absolute inset-x-3 flex animate-scale-in flex-col items-center gap-3 text-center delay-1100 sm:gap-4"
           style={{ bottom: 'clamp(20px, 4vh, 50px)' }}
@@ -183,6 +187,7 @@ function BottomImages({ maxHeights }: { maxHeights?: [string, string, string] })
           className="block h-auto w-full object-cover"
           style={maxHeights ? { maxHeight: maxHeights[2] } : undefined}
         />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-sage-900/65 via-sage-900/20 to-transparent" />
         <div
           className="absolute animate-scale-in delay-1200"
           style={{ bottom: 'clamp(20px, 4vh, 50px)', right: 'clamp(16px, 2.5vw, 40px)' }}

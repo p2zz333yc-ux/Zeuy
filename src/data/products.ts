@@ -13,7 +13,11 @@ export type Product = {
   shape: ProductShape
   badge?: string
   species: ('Chien' | 'Chat')[]
+  /** Photo produit (CDN) ; en son absence ou en cas d'échec de chargement, la carte affiche l'emoji animé. */
+  image?: string
 }
+
+const HF_CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_3G8WFZ16pJpe7wOuL9i74mMYvEc'
 
 export const categories = [
   'Tous',
@@ -28,6 +32,7 @@ export const products: Product[] = [
   {
     id: '1',
     slug: 'baume-apaisant-pattes',
+    image: `${HF_CDN}/hf_20260709_233635_3de0d271-9c6c-4394-9cfa-f881e610b999_min.webp`,
     name: 'Baume Apaisant Pattes',
     category: 'Soins & Toilettage',
     price: 18.9,
@@ -43,6 +48,7 @@ export const products: Product[] = [
   {
     id: '2',
     slug: 'huile-calme-lavande',
+    image: `${HF_CDN}/hf_20260709_233637_cf041aa0-16d3-4820-8b00-80bcbbf358e3_min.webp`,
     name: 'Huile de Calme Lavande',
     category: 'Aromathérapie',
     price: 24.5,
@@ -57,6 +63,7 @@ export const products: Product[] = [
   {
     id: '3',
     slug: 'complement-articulations-serenes',
+    image: `${HF_CDN}/hf_20260709_233640_4645f0eb-17d0-4063-8670-a00f499d109b_min.webp`,
     name: 'Articulations Sereines',
     category: 'Compléments',
     price: 29.9,
@@ -72,6 +79,7 @@ export const products: Product[] = [
   {
     id: '4',
     slug: 'shampoing-avoine-camomille',
+    image: `${HF_CDN}/hf_20260709_233815_4b8d7e10-4eb7-411e-8502-a9e4d615736b_min.webp`,
     name: 'Shampoing Avoine & Camomille',
     category: 'Soins & Toilettage',
     price: 16.5,
@@ -86,6 +94,7 @@ export const products: Product[] = [
   {
     id: '5',
     slug: 'spray-anti-stress-voyage',
+    image: `${HF_CDN}/hf_20260709_233817_4fee1dd6-f4f4-4132-86d8-8594a87f0019_min.webp`,
     name: 'Spray Anti-Stress Voyage',
     category: 'Aromathérapie',
     price: 21.9,
@@ -100,6 +109,7 @@ export const products: Product[] = [
   {
     id: '6',
     slug: 'balle-massage-sensoriel',
+    image: `${HF_CDN}/hf_20260709_233819_25b0d787-5b10-4f15-ba48-5f5ad39c030e_min.webp`,
     name: 'Balle Massage Sensoriel',
     category: 'Jouets zen',
     price: 12.9,
@@ -114,6 +124,7 @@ export const products: Product[] = [
   {
     id: '7',
     slug: 'coussin-chauffant-lavande',
+    image: `${HF_CDN}/hf_20260709_233950_dcae6c8a-73ec-4ad9-81a1-dd52e4a123db_min.webp`,
     name: 'Coussin Chauffant Lavande',
     category: 'Accessoires',
     price: 34.0,
@@ -128,6 +139,7 @@ export const products: Product[] = [
   {
     id: '9',
     slug: 'maison-cosy-chat',
+    image: `${HF_CDN}/hf_20260709_233436_ce3aeab3-c67a-45ba-97b2-360c247007bf_min.webp`,
     name: 'Maison Cosy pour Chat',
     category: 'Accessoires',
     price: 49.99,
@@ -143,6 +155,7 @@ export const products: Product[] = [
   {
     id: '8',
     slug: 'diffuseur-ambiance-zen',
+    image: `${HF_CDN}/hf_20260709_233952_a6a5d843-7cda-45d9-ad29-140f539c155f_min.webp`,
     name: 'Diffuseur Ambiance Zen',
     category: 'Accessoires',
     price: 39.9,

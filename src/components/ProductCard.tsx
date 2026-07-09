@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import TiltCard from './TiltCard'
@@ -14,6 +15,8 @@ const SHAPE_ICON: Record<Product['shape'], string> = {
 
 export default function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const { addItem } = useCart()
+  const [imageFailed, setImageFailed] = useState(false)
+  const showPhoto = Boolean(product.image) && !imageFailed
 
   return (
     <motion.div
@@ -30,14 +33,23 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
               className="flex aspect-[4/3] items-center justify-center overflow-hidden"
               style={{ background: `radial-gradient(circle at 50% 30%, ${product.color}33, ${product.color}0d)` }}
             >
-              <motion.span
-                className="text-7xl drop-shadow-xl"
-                style={{ transform: 'translateZ(60px)' }}
-                animate={{ y: [0, -10, 0], rotate: [0, 4, 0] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.2 }}
-              >
-                {SHAPE_ICON[product.shape]}
-              </motion.span>
+              {showPhoto ? (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  onError={() => setImageFailed(true)}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <motion.span
+                  className="text-7xl drop-shadow-xl"
+                  style={{ transform: 'translateZ(60px)' }}
+                  animate={{ y: [0, -10, 0], rotate: [0, 4, 0] }}
+                  transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.2 }}
+                >
+                  {SHAPE_ICON[product.shape]}
+                </motion.span>
+              )}
             </div>
             {product.badge && (
               <span className="absolute left-4 top-4 rounded-full bg-clay-500 px-3 py-1 text-xs font-semibold text-cream shadow-card">

@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 import SafeImg from './SafeImg'
 
 const AVATAR_URL =
-  'https://polo-pecan-73837341.figma.site/_assets/v11/e62173d41f91350a59628e8a9a55ae078a886fb9.png?w=128'
+  'https://d8j0ntlcm91z4.cloudfront.net/user_3G8WFZ16pJpe7wOuL9i74mMYvEc/hf_20260709_233632_e6a2367f-49e2-475a-8b7f-9fb77ab8da31_min.webp'
 
 const navLinks = [
   { to: '/', label: 'Accueil' },
