@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="354" height="574" viewBox="0 0 354 574">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#4d6f3a"/>
+      <stop offset="1" stop-color="#1f2f18"/>
+    </linearGradient>
+  </defs>
+  <rect width="354" height="574" fill="url(#bg)"/>
+  <circle cx="290" cy="110" r="120" fill="#c6d7b9" opacity="0.16"/>
+  <circle cx="60" cy="440" r="140" fill="#e6976f" opacity="0.12"/>
+  <text x="177" y="230" font-size="110" text-anchor="middle">🎥</text>
+  <text x="177" y="360" font-size="90" text-anchor="middle">🐾</text>
+</svg>

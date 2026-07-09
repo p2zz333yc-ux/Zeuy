@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="470" viewBox="0 0 600 470">
+  <defs>
+    <linearGradient id="bg" x1="1" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#a3c090"/>
+      <stop offset="1" stop-color="#3c582e"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.5" stop-color="#1f2f18" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1f2f18" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="470" fill="url(#bg)"/>
+  <circle cx="120" cy="100" r="140" fill="#f4dca0" opacity="0.13"/>
+  <circle cx="500" cy="380" r="160" fill="#fbe4d8" opacity="0.10"/>
+  <circle cx="300" cy="210" r="140" fill="#f6f1e4" opacity="0.12"/>
+  <text x="300" y="265" font-size="150" text-anchor="middle">🐶</text>
+  <rect width="600" height="470" fill="url(#shade)"/>
+</svg>
