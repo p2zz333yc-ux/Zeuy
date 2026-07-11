@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Crosshair, Sparkles, Eye } from "lucide-react";
 import { Reveal, StaggerGroup, staggerItem } from "@/components/Reveal";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { generatedMedia } from "@/config/media";
 
 const benefits = [
   {
@@ -56,14 +57,17 @@ export function SolutionSection() {
               className="w-40 shrink-0 overflow-hidden rounded-3xl shadow-2xl ring-1 ring-cream-50/10 sm:w-56"
             >
               <Image
-                src="/images/product-dosage.jpg"
+                src={generatedMedia.dosageLifestyle}
                 alt="Fenêtre de dosage graduée de l'applicateur RootRitual dans une main"
-                width={1206}
-                height={875}
+                width={928}
+                height={1152}
                 className="w-full"
               />
             </motion.div>
-            <VideoPlayer className="hidden sm:flex" />
+            <VideoPlayer
+              src={generatedMedia.ugcDemoVideo}
+              className="hidden sm:flex"
+            />
           </Reveal>
 
           <StaggerGroup className="order-1 flex flex-col divide-y divide-cream-50/10 lg:order-2">
@@ -91,7 +95,7 @@ export function SolutionSection() {
         </div>
 
         <div className="mt-10 flex justify-center sm:hidden">
-          <VideoPlayer />
+          <VideoPlayer src={generatedMedia.ugcDemoVideo} />
         </div>
       </div>
     </section>

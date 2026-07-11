@@ -5,6 +5,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import { Star, Truck } from "lucide-react";
 import { site } from "@/config/site";
+import { generatedMedia } from "@/config/media";
 import { BuyButton } from "@/components/BuyButton";
 
 const [taglineLead, taglineAccent] = site.tagline.split(". ");
@@ -88,10 +89,10 @@ export function Hero() {
         >
           <div className="relative w-64 overflow-hidden rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(36,26,18,0.35)] ring-1 ring-ink-900/5 sm:w-80 lg:w-96">
             <Image
-              src="/images/product-hero.jpg"
+              src={generatedMedia.heroProduct}
               alt="Applicateur d'huile RootRitual avec picots à billes et LED rouge"
-              width={1206}
-              height={1180}
+              width={928}
+              height={1152}
               priority
               className="w-full"
             />
