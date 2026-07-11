@@ -14,22 +14,22 @@ export function Pricing() {
   );
 
   return (
-    <section id="pricing" className="bg-white py-16 sm:py-24">
+    <section id="pricing" className="bg-cream-100 py-16 sm:py-28">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+        <Reveal className="mx-auto max-w-xl text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-rust-600">
+            L&apos;offre
+          </span>
+          <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-ink-900 sm:text-4xl">
             Choisis ton rituel
           </h2>
-          <p className="mt-3 text-stone-600">
+          <p className="mt-3 text-ink-600">
             Un seul applicateur suffit. Le pack Duo et le Rituel complet sont
             faits pour partager ou prendre de l&apos;avance.
           </p>
         </Reveal>
 
-        <Reveal
-          delay={0.1}
-          className="mt-10 grid gap-4 sm:grid-cols-3"
-        >
+        <Reveal delay={0.1} className="mt-10 grid gap-4 sm:grid-cols-3">
           <div className="contents" role="radiogroup" aria-label="Choix du pack">
             {bundles.map((bundle) => {
               const isSelected = selected === bundle.id;
@@ -41,16 +41,16 @@ export function Pricing() {
                   aria-checked={isSelected}
                   onClick={() => setSelected(bundle.id)}
                   className={clsx(
-                    "relative flex flex-col rounded-2xl border-2 p-5 text-left transition-colors",
+                    "relative flex flex-col rounded-2xl border p-5 text-left transition-colors",
                     isSelected
-                      ? "border-rose-600 bg-rose-50/60"
-                      : "border-stone-200 bg-white hover:border-stone-300"
+                      ? "border-transparent bg-ink-900 text-cream-50"
+                      : "border-ink-900/15 bg-cream-50 hover:border-ink-900/30"
                   )}
                 >
                   {isSelected ? (
                     <motion.div
                       layoutId="pricing-highlight"
-                      className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-rose-600"
+                      className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-rust-500/60"
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   ) : null}
@@ -60,28 +60,43 @@ export function Pricing() {
                       className={clsx(
                         "absolute -top-3 left-4 rounded-full px-3 py-1 text-xs font-semibold",
                         bundle.popular
-                          ? "bg-rose-600 text-white"
-                          : "bg-stone-900 text-white"
+                          ? "bg-rust-600 text-cream-50"
+                          : "bg-gold-500 text-ink-900"
                       )}
                     >
                       {bundle.badge}
                     </span>
                   ) : null}
 
-                  <span className="mt-2 text-sm font-medium text-stone-500">
+                  <span
+                    className={clsx(
+                      "mt-2 text-sm font-medium",
+                      isSelected ? "text-cream-200" : "text-ink-500"
+                    )}
+                  >
                     {bundle.label}
                   </span>
-                  <span className="mt-1 text-2xl font-semibold text-stone-900">
+                  <span className="mt-1 font-serif text-2xl font-medium">
                     {bundle.price.toFixed(2).replace(".", ",")}
                     {site.currencySymbol}
                   </span>
                   {bundle.compareAtPrice ? (
-                    <span className="text-xs text-stone-400 line-through">
+                    <span
+                      className={clsx(
+                        "text-xs line-through",
+                        isSelected ? "text-cream-200/70" : "text-ink-400"
+                      )}
+                    >
                       {bundle.compareAtPrice.toFixed(2).replace(".", ",")}
                       {site.currencySymbol}
                     </span>
                   ) : null}
-                  <span className="mt-3 text-sm text-stone-600">
+                  <span
+                    className={clsx(
+                      "mt-3 text-sm",
+                      isSelected ? "text-cream-200" : "text-ink-600"
+                    )}
+                  >
                     {bundle.description}
                   </span>
 
@@ -89,8 +104,8 @@ export function Pricing() {
                     className={clsx(
                       "mt-4 flex size-5 items-center justify-center rounded-full border-2",
                       isSelected
-                        ? "border-rose-600 bg-rose-600 text-white"
-                        : "border-stone-300"
+                        ? "border-rust-500 bg-rust-500 text-cream-50"
+                        : "border-ink-900/25"
                     )}
                   >
                     {isSelected ? <Check className="size-3" /> : null}
@@ -110,13 +125,13 @@ export function Pricing() {
               .replace(".", ",")}${site.currencySymbol}`}
           />
 
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-stone-500">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink-500">
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="size-4 text-emerald-600" />
+              <ShieldCheck className="size-4 text-emerald-700" />
               Satisfait ou remboursé {site.guaranteeDays} jours
             </span>
             <span className="flex items-center gap-1.5">
-              <Flame className="size-4 text-amber-500" />
+              <Flame className="size-4 text-rust-500" />
               Plus que {stockRemaining} en stock
             </span>
           </div>

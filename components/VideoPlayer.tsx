@@ -20,7 +20,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     return (
       <div
         className={
-          "flex aspect-[9/16] w-full max-w-xs flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-stone-300 bg-stone-50 text-center text-stone-400 " +
+          "flex aspect-[9/16] w-full max-w-xs flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-cream-50/25 bg-cream-50/5 text-center text-ink-400 " +
           (className ?? "")
         }
       >
@@ -63,7 +63,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           className="absolute inset-0 flex items-center justify-center bg-black/20"
           aria-label="Lire la vidéo"
         >
-          <span className="flex size-16 items-center justify-center rounded-full bg-white/90 text-rose-700">
+          <span className="flex size-16 items-center justify-center rounded-full bg-cream-50/90 text-rust-600">
             <Play className="size-7 translate-x-0.5 fill-current" />
           </span>
         </motion.button>

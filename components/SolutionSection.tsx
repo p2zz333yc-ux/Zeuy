@@ -8,18 +8,21 @@ import { VideoPlayer } from "@/components/VideoPlayer";
 
 const benefits = [
   {
+    number: "01",
     icon: Crosshair,
     title: "Application précise aux racines",
     description:
       "Les picots à billes métalliques déposent l'huile directement à la racine, là où ton rituel capillaire en a besoin.",
   },
   {
+    number: "02",
     icon: Sparkles,
     title: "Massage du cuir chevelu, en même temps",
     description:
       "Chaque passage masse le cuir chevelu pendant l'application : un geste, deux sensations.",
   },
   {
+    number: "03",
     icon: Eye,
     title: "Dosage visible",
     description:
@@ -29,13 +32,16 @@ const benefits = [
 
 export function SolutionSection() {
   return (
-    <section id="solution" className="bg-stone-50 py-16 sm:py-24">
+    <section id="solution" className="bg-ink-900 py-16 text-cream-100 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+        <Reveal className="max-w-xl">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-gold-400">
+            La solution
+          </span>
+          <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-cream-50 sm:text-4xl">
             Un seul geste, deux bénéfices
           </h2>
-          <p className="mt-3 text-stone-600">
+          <p className="mt-3 max-w-lg text-ink-400">
             RootRitual associe application ciblée et massage stimulant du
             cuir chevelu, avec un dosage que tu contrôles du regard.
           </p>
@@ -47,7 +53,7 @@ export function SolutionSection() {
               whileInView={{ rotate: [0, -2, 2, 0] }}
               viewport={{ once: true }}
               transition={{ duration: 1.1, ease: "easeInOut" }}
-              className="w-40 shrink-0 overflow-hidden rounded-3xl shadow-xl sm:w-56"
+              className="w-40 shrink-0 overflow-hidden rounded-3xl shadow-2xl ring-1 ring-cream-50/10 sm:w-56"
             >
               <Image
                 src="/images/product-dosage.jpg"
@@ -60,21 +66,22 @@ export function SolutionSection() {
             <VideoPlayer className="hidden sm:flex" />
           </Reveal>
 
-          <StaggerGroup className="order-1 grid gap-5 lg:order-2">
+          <StaggerGroup className="order-1 flex flex-col divide-y divide-cream-50/10 lg:order-2">
             {benefits.map((b) => (
               <motion.div
                 key={b.title}
                 variants={staggerItem}
-                className="flex gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-100"
+                className="flex gap-5 py-5 first:pt-0 last:pb-0"
               >
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white">
-                  <b.icon className="size-5" />
-                </div>
+                <span className="font-serif text-2xl font-medium text-rust-500">
+                  {b.number}
+                </span>
                 <div>
-                  <h3 className="font-serif text-lg font-semibold text-stone-900">
+                  <h3 className="flex items-center gap-2 font-serif text-lg font-medium text-cream-50">
+                    <b.icon className="size-4 text-gold-400" />
                     {b.title}
                   </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-stone-600">
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-400">
                     {b.description}
                   </p>
                 </div>

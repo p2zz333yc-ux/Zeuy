@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1c1917;
+  --background: #fbf6ec;
+  --foreground: #241a12;
 }
 
 @theme inline {
@@ -10,6 +10,33 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
+
+  /* Crème chaude — fond principal, remplace le blanc/gris neutre par défaut */
+  --color-cream-50: #fdfbf6;
+  --color-cream-100: #fbf6ec;
+  --color-cream-200: #f4ead6;
+  --color-cream-300: #ecdcbc;
+
+  /* Encre brune — texte et accents sombres, remplace le noir/stone par défaut */
+  --color-ink-400: #9c8b76;
+  --color-ink-500: #7c6b56;
+  --color-ink-600: #5c4c3a;
+  --color-ink-700: #443627;
+  --color-ink-800: #30251a;
+  --color-ink-900: #241a12;
+
+  /* Terracotta — couleur signature de la marque, remplace le rose générique */
+  --color-rust-50: #fbeee7;
+  --color-rust-100: #f6dccb;
+  --color-rust-300: #dc8f68;
+  --color-rust-500: #bd5934;
+  --color-rust-600: #a3462a;
+  --color-rust-700: #833823;
+
+  /* Or doux — accent secondaire discret (étoiles, détails) */
+  --color-gold-400: #d9b36b;
+  --color-gold-500: #c79a4b;
+  --color-gold-600: #ad7f35;
 }
 
 body {
@@ -19,4 +46,18 @@ body {
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Grain subtil pour casser les aplats de couleur trop "digital" */
+.bg-grain {
+  position: relative;
+}
+.bg-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }

@@ -55,10 +55,10 @@ export function BuyButton({
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         className={clsx(
-          "inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-base font-semibold shadow-lg transition-colors disabled:opacity-70",
+          "inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-[0.95rem] font-semibold tracking-wide shadow-lg transition-colors disabled:opacity-70",
           variant === "primary"
-            ? "bg-rose-600 text-white hover:bg-rose-700 shadow-rose-600/30"
-            : "bg-white text-rose-700 hover:bg-rose-50 border border-rose-200",
+            ? "bg-ink-900 text-cream-50 shadow-ink-900/25 hover:bg-rust-700"
+            : "border border-ink-900/15 bg-cream-50 text-ink-900 hover:border-rust-500 hover:text-rust-600",
           className
         )}
       >
@@ -66,7 +66,7 @@ export function BuyButton({
         {label}
       </motion.button>
       {error ? (
-        <p className="max-w-xs text-center text-xs text-rose-600">{error}</p>
+        <p className="max-w-xs text-center text-xs text-rust-600">{error}</p>
       ) : null}
     </div>
   );

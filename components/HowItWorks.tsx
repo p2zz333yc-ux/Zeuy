@@ -26,22 +26,21 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section className="bg-cream-100 py-16 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+        <Reveal className="max-w-xl">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-rust-600">
+            Le rituel
+          </span>
+          <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-ink-900 sm:text-4xl">
             Comment ça marche
           </h2>
-          <p className="mt-3 text-stone-600">
-            Un rituel capillaire en trois étapes, moins de 3 minutes chrono.
+          <p className="mt-3 text-ink-600">
+            Trois étapes, moins de 3 minutes chrono.
           </p>
         </Reveal>
 
-        <div className="relative mt-14 grid gap-8 sm:grid-cols-3 sm:gap-6">
-          <div
-            aria-hidden
-            className="absolute top-8 left-0 right-0 hidden h-px bg-stone-200 sm:block"
-          />
+        <div className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
           {steps.map((step, i) => (
             <motion.div
               key={step.number}
@@ -53,15 +52,15 @@ export function HowItWorks() {
                 delay: i * 0.25,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="relative flex flex-col items-center text-center sm:items-start sm:text-left"
+              className="relative border-t border-ink-900/15 pt-6"
             >
-              <span className="relative z-10 flex size-16 items-center justify-center rounded-full bg-rose-600 font-serif text-xl font-semibold text-white shadow-lg shadow-rose-600/30">
+              <span className="font-serif text-5xl font-medium text-rust-500/40">
                 {step.number}
               </span>
-              <h3 className="mt-5 font-serif text-lg font-semibold text-stone-900">
+              <h3 className="mt-4 font-serif text-xl font-medium text-ink-900">
                 {step.title}
               </h3>
-              <p className="mt-2 max-w-xs text-sm leading-relaxed text-stone-600">
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-ink-600">
                 {step.description}
               </p>
             </motion.div>

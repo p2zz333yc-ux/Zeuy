@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { site } from "@/config/site";
+import clsx from "clsx";
 
 const faqs = [
   {
@@ -42,35 +43,40 @@ export function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section className="bg-stone-50 py-16 sm:py-24">
+    <section className="bg-cream-50 py-16 sm:py-28">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <Reveal className="text-center">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-rust-600">
+            Questions
+          </span>
+          <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-ink-900 sm:text-4xl">
             Questions fréquentes
           </h2>
         </Reveal>
 
-        <Reveal delay={0.1} className="mt-10 flex flex-col gap-3">
+        <Reveal delay={0.1} className="mt-10 flex flex-col divide-y divide-ink-900/10 border-y border-ink-900/10">
           {faqs.map((faq, i) => {
             const isOpen = open === i;
             return (
-              <div
-                key={faq.question}
-                className="overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200"
-              >
+              <div key={faq.question}>
                 <button
                   type="button"
                   onClick={() => setOpen(isOpen ? null : i)}
                   aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+                  className="flex w-full items-center justify-between gap-4 py-5 text-left"
                 >
-                  <span className="font-medium text-stone-900">
+                  <span
+                    className={clsx(
+                      "font-serif text-base font-medium",
+                      isOpen ? "text-rust-600" : "text-ink-900"
+                    )}
+                  >
                     {faq.question}
                   </span>
                   <motion.span
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.25 }}
-                    className="shrink-0 text-stone-500"
+                    className="shrink-0 text-ink-500"
                   >
                     <ChevronDown className="size-5" />
                   </motion.span>
@@ -84,7 +90,7 @@ export function FAQ() {
                       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <p className="px-5 pb-4 text-sm leading-relaxed text-stone-600">
+                      <p className="pb-5 text-sm leading-relaxed text-ink-600">
                         {faq.answer}
                       </p>
                     </motion.div>

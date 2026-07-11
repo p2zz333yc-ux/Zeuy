@@ -71,13 +71,16 @@ export function Testimonials() {
   }, [next]);
 
   return (
-    <section className="bg-stone-50 py-16 sm:py-24">
+    <section className="bg-cream-50 py-16 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+        <Reveal className="mx-auto max-w-xl text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-rust-600">
+            Avis clients
+          </span>
+          <h2 className="mt-3 font-serif text-3xl font-medium tracking-tight text-ink-900 sm:text-4xl">
             Elles ont adopté leur rituel
           </h2>
-          <p className="mt-3 text-stone-600">
+          <p className="mt-3 text-ink-600">
             Des retours sur l&apos;expérience d&apos;utilisation au quotidien.
           </p>
         </Reveal>
@@ -95,26 +98,32 @@ export function Testimonials() {
                   className="shrink-0 px-2"
                   style={{ width: `${100 / cardsPerView}%` }}
                 >
-                  <div className="flex h-full flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-100">
-                    <div className="flex items-center gap-1 text-amber-500">
+                  <div className="relative flex h-full flex-col border-l-2 border-rust-500/40 bg-cream-100 p-6">
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute -top-3 right-4 font-serif text-6xl text-ink-900/5"
+                    >
+                      &rdquo;
+                    </span>
+                    <div className="flex items-center gap-1 text-gold-500">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
                           className={
                             "size-4 " +
-                            (i < t.rating ? "fill-current" : "fill-none stroke-stone-300 text-stone-300")
+                            (i < t.rating ? "fill-current" : "fill-none stroke-ink-400 text-ink-400")
                           }
                         />
                       ))}
                     </div>
-                    <p className="mt-4 flex-1 text-sm leading-relaxed text-stone-700">
+                    <p className="relative mt-4 flex-1 text-sm leading-relaxed text-ink-700">
                       &ldquo;{t.text}&rdquo;
                     </p>
                     <div className="mt-5 flex items-center gap-3">
-                      <span className="flex size-9 items-center justify-center rounded-full bg-rose-100 text-xs font-semibold text-rose-700">
+                      <span className="flex size-9 items-center justify-center rounded-full bg-rust-100 text-xs font-semibold text-rust-700">
                         {t.initials}
                       </span>
-                      <span className="text-sm font-medium text-stone-800">
+                      <span className="text-sm font-medium text-ink-800">
                         {t.name}
                       </span>
                     </div>
@@ -129,7 +138,7 @@ export function Testimonials() {
               type="button"
               onClick={prev}
               aria-label="Avis précédent"
-              className="flex size-9 items-center justify-center rounded-full bg-white text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-rose-700"
+              className="flex size-9 items-center justify-center rounded-full bg-cream-100 text-ink-600 ring-1 ring-ink-900/10 transition hover:text-rust-600"
             >
               <ChevronLeft className="size-4" />
             </button>
@@ -141,7 +150,7 @@ export function Testimonials() {
                   onClick={() => setIndex(i)}
                   className={
                     "h-1.5 rounded-full transition-all " +
-                    (i === index ? "w-6 bg-rose-600" : "w-1.5 bg-stone-300")
+                    (i === index ? "w-6 bg-rust-600" : "w-1.5 bg-ink-900/15")
                   }
                 />
               ))}
@@ -150,7 +159,7 @@ export function Testimonials() {
               type="button"
               onClick={next}
               aria-label="Avis suivant"
-              className="flex size-9 items-center justify-center rounded-full bg-white text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-rose-700"
+              className="flex size-9 items-center justify-center rounded-full bg-cream-100 text-ink-600 ring-1 ring-ink-900/10 transition hover:text-rust-600"
             >
               <ChevronRight className="size-4" />
             </button>

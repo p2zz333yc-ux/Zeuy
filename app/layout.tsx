@@ -14,7 +14,8 @@ const inter = Inter({
 const fraunces = Fraunces({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -65,7 +66,7 @@ export default function RootLayout({
       lang="fr"
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-white font-sans text-stone-900">
+      <body className="flex min-h-full flex-col bg-cream-100 font-sans text-ink-900">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
