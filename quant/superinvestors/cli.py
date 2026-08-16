@@ -25,6 +25,12 @@ from .algo.backtest import (
     simulate_forward,
 )
 from .algo.market_data import MarketModel, load_prices_csv, measure_risk
+from .algo.overlay import (
+    OverlayConfig,
+    correlation_matrix,
+    run_overlay,
+    summarize_market,
+)
 from .algo.portfolio import TargetPortfolio, build_target_portfolio
 from .algo.risk import RiskConfig
 from .algo.scoring import ScoringConfig, eligible_assets, score_universe
@@ -280,6 +286,107 @@ def cmd_backtest(universe: Universe, args: argparse.Namespace) -> None:
     print(result.render())
 
 
+def cmd_marches(_: Universe, args: argparse.Namespace) -> None:
+    """Backtest du dispositif de risque sur des marchés réels."""
+    history = load_prices_csv(Path(args.prix))
+    ppy = args.periodes_par_an
+    config = OverlayConfig(
+        target_vol=args.vol_cible,
+        lookback=args.lookback,
+        periods_per_year=ppy,
+        cost_bps=args.frais,
+    )
+    unit = {12: "mois", 252: "jour", 52: "semaine"}.get(ppy, "période")
+    marches = args.marches or list(history.tickers)
+    absents = [t for t in marches if t not in history.series]
+    if absents:
+        raise ValueError(f"séries absentes du fichier : {', '.join(absents)}")
+
+    horizon = (len(history.dates) - 1) / ppy
+    print(_title("BACKTEST SUR DONNÉES DE MARCHÉ RÉELLES"))
+    print(
+        f"\n  Fichier   : {args.prix}"
+        f"\n  Période   : {history.dates[0]} → {history.dates[-1]} "
+        f"({len(history.dates)} périodes, {horizon:.1f} an(s))"
+        f"\n  Marchés   : {', '.join(marches)}"
+    )
+    if "NDX" not in history.series:
+        print(
+            "\n  ⚠ Nasdaq absent : aucune source publique gratuite et à jour n'est\n"
+            "    accessible depuis cet environnement. Ajoutez-le avec\n"
+            "    outils/telecharger_series.py --nasdaq votre_fichier.csv"
+        )
+
+    print(_title("1. LES MARCHÉS BRUTS, SANS AUCUN DISPOSITIF"))
+    print(f"\n  {'marché':<10}{'total':>10}{'TCAC':>10}{'volatilité':>13}{'perte max':>12}")
+    for ticker in marches:
+        stats = summarize_market(history, ticker, ppy)
+        print(
+            f"  {ticker:<10}{stats.total_return:>+10.1%}{stats.cagr:>+10.2%}"
+            f"{stats.volatility:>13.2%}{-stats.max_drawdown:>12.1%}"
+        )
+
+    print(_title("2. LE DISPOSITIF DE RISQUE APPLIQUÉ À CHAQUE MARCHÉ"))
+    print(
+        f"\n  Cible de volatilité {config.target_vol:.0%} · coupe-circuit sur perte · "
+        f"{config.cost_bps:.0f} pb de frais · volatilité estimée sur {config.lookback} périodes\n"
+        "  glissantes, connues avant la période testée (aucune anticipation).\n"
+    )
+    print(
+        f"  {'marché':<10}{'TCAC brut':>11}{'TCAC net':>11}{'vol brute':>11}{'vol nette':>11}"
+        f"{'perte brute':>13}{'perte nette':>13}{'expo moy.':>11}"
+    )
+    results = []
+    for ticker in marches:
+        result = run_overlay(history, {ticker: 1.0}, label=ticker, config=config)
+        results.append(result)
+        print(
+            f"  {ticker:<10}{result.buyhold.cagr:>+11.2%}{result.overlay.cagr:>+11.2%}"
+            f"{result.buyhold.volatility:>11.2%}{result.overlay.volatility:>11.2%}"
+            f"{-result.buyhold.max_drawdown:>13.1%}{-result.overlay.max_drawdown:>13.1%}"
+            f"{result.avg_exposure:>11.0%}"
+        )
+    print(
+        f"\n  Période effective : {results[0].dates[0]} → {results[0].dates[-1]} "
+        f"({len(results[0].dates)} périodes) — les {config.lookback} premières servent à\n"
+        "  amorcer l'estimation de volatilité, d'où l'écart avec le tableau 1."
+    )
+    for result in results:
+        print(
+            f"    {result.label:<8} conserve {result.return_capture:.0%} de la hausse "
+            f"et évite {result.risk_reduction:.0%} de la perte maximale"
+        )
+
+    if len(marches) > 1:
+        print(_title("3. PANIER DIVERSIFIÉ (ÉQUIPONDÉRÉ) SOUS DISPOSITIF"))
+        blend = run_overlay(
+            history, dict.fromkeys(marches, 1.0), label="panier", config=config
+        )
+        print(f"\n  ACHAT-CONSERVATION\n{blend.buyhold.render(unit=unit)}")
+        print(f"\n  SOUS DISPOSITIF\n{blend.overlay.render(unit=unit)}")
+        print(
+            f"\n  exposition moyenne {blend.avg_exposure:.0%} "
+            f"(minimum {blend.min_exposure:.0%}) · rotation cumulée {blend.turnover:.0%} "
+            f"· frais {blend.costs:.2%}"
+        )
+
+        print(_title("4. CORRÉLATION MESURÉE SUR LA PÉRIODE"))
+        matrix = correlation_matrix(history, list(marches))
+        print(f"\n  {'':<10}" + "".join(f"{t:>10}" for t in marches))
+        for a in marches:
+            print(f"  {a:<10}" + "".join(f"{matrix[(a, b)]:>10.2f}" for b in marches))
+
+    print(_title("CE QUE CE BACKTEST NE MESURE PAS"))
+    print(
+        "\n  Il teste le dispositif de risque, pas la sélection de titres issue des\n"
+        "  13F. Tester celle-ci sur trois ans exigerait douze photographies\n"
+        "  trimestrielles de chaque gérant ; nous n'en avons qu'une (T2 2026).\n"
+        "  Appliquer le portefeuille d'aujourd'hui aux trois dernières années\n"
+        "  reviendrait à acheter en 2023 des titres choisis en 2026 : le résultat\n"
+        "  serait flatteur et entièrement faux."
+    )
+
+
 def cmd_export(universe: Universe, args: argparse.Namespace) -> None:
     path = export_holdings_csv(universe, Path(args.sortie))
     lines = sum(len(p.holdings) for p in universe.portfolios)
@@ -329,6 +436,19 @@ def build_parser() -> argparse.ArgumentParser:
     backtest.add_argument("--indice", default="SPY", help="ticker de l'indice de référence")
     backtest.add_argument("--frais", type=float, default=10.0, help="frais en points de base")
 
+    marches = subparsers.add_parser(
+        "marches", help="backtest du dispositif de risque sur des marchés réels"
+    )
+    marches.add_argument("--prix", default="donnees/marches_mensuels.csv",
+                         help="CSV date,ticker,close")
+    marches.add_argument("--marches", nargs="*", help="sous-ensemble de séries à tester")
+    marches.add_argument("--vol-cible", type=float, default=0.12)
+    marches.add_argument("--lookback", type=int, default=12,
+                         help="périodes servant à estimer la volatilité (défaut : 12)")
+    marches.add_argument("--periodes-par-an", type=int, default=12,
+                         help="12 pour du mensuel, 252 pour du quotidien")
+    marches.add_argument("--frais", type=float, default=10.0, help="frais en points de base")
+
     export = subparsers.add_parser("export", help="exporter les positions en CSV")
     export.add_argument("--sortie", default="positions_13f.csv")
 
@@ -348,6 +468,7 @@ def main(argv: list[str] | None = None) -> int:
         "portefeuille": cmd_portefeuille,
         "simuler": cmd_simuler,
         "backtest": cmd_backtest,
+        "marches": cmd_marches,
         "export": cmd_export,
     }
     try:
@@ -356,7 +477,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Erreur : {error}", file=sys.stderr)
         return 1
 
-    if args.commande in {"portefeuille", "simuler", "backtest", "score"}:
+    if args.commande in {"portefeuille", "simuler", "backtest", "marches", "score"}:
         print(f"\n{RULE}\n{AVERTISSEMENT}")
     return 0
 

@@ -36,6 +36,7 @@ python3 -m superinvestors.cli pourquoi GOOGL # thèse d'un titre et liste des d�
 python3 -m superinvestors.cli score --top 20 # classement des titres
 python3 -m superinvestors.cli portefeuille   # portefeuille cible sous contraintes de risque
 python3 -m superinvestors.cli simuler        # distribution des résultats possibles
+python3 -m superinvestors.cli marches      # dispositif de risque sur S&P 500 et or
 python3 -m superinvestors.cli export --sortie positions.csv
 ```
 
@@ -129,6 +130,44 @@ de l'exposition initiale au-delà de −20 %.
 - `backtest` rejoue la stratégie sur *vos* données de prix, avec achat au plus
   tôt à la date de publication (fin de trimestre + 45 jours) et frais de
   transaction. Il ne fabrique jamais de données.
+- `marches` teste le dispositif de risque sur de vraies séries de marché
+  (voir ci-dessous).
+
+---
+
+## Backtest sur marchés réels
+
+```bash
+python3 outils/telecharger_series.py     # S&P 500 + or, sources publiques
+python3 -m superinvestors.cli marches
+```
+
+Ce que cette commande mesure : **le dispositif de risque**, qui est agnostique
+à l'actif — cible de volatilité, coupe-circuit sur perte, frais de rotation,
+le tout dimensionné avec la seule information disponible avant chaque période.
+
+Résultats sur août 2023 – juillet 2026 (36 points mensuels, dispositif actif
+sur les 24 derniers mois) :
+
+| Marché | TCAC brut | TCAC net | Vol brute | Vol nette | Perte max brute | Perte max nette |
+|---|---:|---:|---:|---:|---:|---:|
+| S&P 500 | +17,7 % | +16,5 % | 11,5 % | 11,0 % | −11,1 % | −11,1 % |
+| Or (XAU/USD) | +29,8 % | +33,4 % | 16,7 % | 15,0 % | −18,9 % | −13,1 % |
+
+Sur l'or, le dispositif a conservé 114 % de la hausse en évitant 31 % de la
+perte maximale ; sur le S&P 500, il a coûté 1,2 point de performance sans rien
+éviter — un marché qui monte régulièrement ne récompense pas la prudence. Le
+panier équipondéré des deux, lui, tombe à 9,6 % de volatilité (corrélation
+mesurée : **−0,11**), sous la cible : le dispositif n'a alors rien à réduire.
+**La diversification a fait plus pour le risque que le pilotage de
+l'exposition.**
+
+Ce que cette commande **ne** mesure **pas** : la sélection de titres issue des
+13F. La tester sur trois ans exigerait douze photographies trimestrielles par
+gérant ; nous n'en avons qu'une. Appliquer le portefeuille de 2026 aux années
+2023-2025 reviendrait à acheter des titres choisis après coup.
+
+Réserves de méthode et sources détaillées : [`donnees/README.md`](donnees/README.md).
 
 ---
 
@@ -173,6 +212,7 @@ fiabilité de chaque chiffre (`reported` / `estimated`). Pour brancher d'autres
 données (extraction EDGAR, agrégateur payant, votre propre portefeuille) :
 
 ```bash
+python3 -m superinvestors.cli marches      # dispositif de risque sur S&P 500 et or
 python3 -m superinvestors.cli export --sortie positions.csv   # format de référence
 ```
 
@@ -202,10 +242,11 @@ superinvestors/
 │   ├── market_data.py     import de prix réels, mesure du risque, modèle de marché
 │   ├── metrics.py         TCAC, Sharpe, Sortino, perte maximale, percentiles
 │   └── backtest.py        simulation prospective et backtest historique
+├── algo/overlay.py        dispositif de risque testé sur un marché quelconque
 └── cli.py                 interface en ligne de commande
 ```
 
-60 tests couvrent la cohérence des données, la mécanique du score, le respect des
+71 tests couvrent la cohérence des données, la mécanique du score, le respect des
 contraintes de risque et l'absence d'anticipation dans le backtest.
 
 ---

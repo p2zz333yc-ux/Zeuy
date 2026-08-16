@@ -130,6 +130,8 @@ class BacktestConfig:
     risk_free: float = 0.04
     use_drawdown_throttle: bool = True
     benchmark: str = "SPY"
+    periods_per_year: int = TRADING_DAYS
+    """252 pour un historique quotidien, 12 pour un historique mensuel."""
 
 
 @dataclass
@@ -265,7 +267,7 @@ def run_backtest(
         if i == 0:
             continue
 
-        day_return = cash * config.risk_free / TRADING_DAYS
+        day_return = cash * config.risk_free / config.periods_per_year
         drift: dict[str, float] = {}
         for ticker, weight in weights.items():
             series = history.series[ticker]
@@ -282,7 +284,7 @@ def run_backtest(
         growth = 1.0 + day_return
         if growth > 0:
             weights = {t: w / growth for t, w in drift.items()}
-            cash = cash * (1.0 + config.risk_free / TRADING_DAYS) / growth
+            cash = cash * (1.0 + config.risk_free / config.periods_per_year) / growth
 
     benchmark_series = history.series[config.benchmark][start:]
     benchmark_path = [v / benchmark_series[0] for v in benchmark_series]
@@ -292,9 +294,9 @@ def run_backtest(
             "certaines cibles n'ont pas d'historique de prix et ont été ignorées : "
             "le résultat surpondère mécaniquement les titres restants."
         )
-    if len(dates) < TRADING_DAYS:
+    if len(dates) < config.periods_per_year:
         warnings.append(
-            f"période de {len(dates)} jours seulement : le TCAC et le Sharpe affichés "
+            f"période de {len(dates)} périodes seulement : le TCAC et le Sharpe affichés "
             "sont annualisés à partir d'un échantillon trop court pour signifier quoi "
             "que ce soit. Ne les citez pas."
         )
@@ -303,8 +305,10 @@ def run_backtest(
         dates=dates,
         path=path,
         benchmark_path=benchmark_path,
-        stats=summarize(path, risk_free=config.risk_free),
-        benchmark_stats=summarize(benchmark_path, risk_free=config.risk_free),
+        stats=summarize(path, risk_free=config.risk_free,
+                        periods_per_year=config.periods_per_year),
+        benchmark_stats=summarize(benchmark_path, risk_free=config.risk_free,
+                                  periods_per_year=config.periods_per_year),
         rebalances=rebalances,
         total_turnover=total_turnover,
         total_costs=total_costs,

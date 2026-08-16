@@ -102,7 +102,11 @@ class PerformanceStats:
     def as_dict(self) -> dict[str, float]:
         return asdict(self)
 
-    def render(self) -> str:
+    def render(self, *, unit: str = "jour") -> str:
+        """Rendu texte. ``unit`` nomme la période élémentaire (jour, mois…)."""
+        plural = unit if unit.endswith("s") else f"{unit}s"
+        best = f"meilleur/pire {unit}"
+        positive = f"{plural} positifs"
         return (
             f"  rendement total    : {self.total_return:+.1%}\n"
             f"  TCAC               : {self.cagr:+.2%}\n"
@@ -110,8 +114,8 @@ class PerformanceStats:
             f"  Sharpe             : {self.sharpe:.2f}\n"
             f"  Sortino            : {self.sortino:.2f}\n"
             f"  perte max          : -{self.max_drawdown:.1%}\n"
-            f"  meilleur/pire jour : {self.best_day:+.2%} / {self.worst_day:+.2%}\n"
-            f"  jours positifs     : {self.positive_days:.1%}"
+            f"  {best:<19}: {self.best_day:+.2%} / {self.worst_day:+.2%}\n"
+            f"  {positive:<19}: {self.positive_days:.1%}"
         )
 
 
