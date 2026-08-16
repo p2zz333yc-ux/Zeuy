@@ -25,3 +25,20 @@ npm run preview
 - `src/components` — Navbar, Footer, cartes produits (tilt 3D), transitions de page, panier (toast)
 - `src/data/products.ts` — catalogue produits
 - `src/context/CartContext.tsx` — état du panier (démo front-end)
+
+## Module d'analyse financière (`quant/`)
+
+Le dossier `quant/` héberge un projet indépendant du site : l'analyse des
+portefeuilles 13F des plus grands gérants mondiaux (Berkshire, TCI, Pershing
+Square, Appaloosa, Duquesne, Third Point, Tiger Global, Baupost…) et un
+algorithme de réplication sélective avec contrôle du risque. Paquet Python sans
+dépendance, exécutable seul :
+
+```bash
+cd quant
+python3 -m superinvestors.cli analyse
+python3 -m superinvestors.cli portefeuille
+```
+
+Voir [`quant/README.md`](quant/README.md) pour l'outil et
+[`quant/ANALYSE.md`](quant/ANALYSE.md) pour l'analyse rédigée.
