@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fomo": "node --experimental-strip-types --no-warnings fomo/src/cli.ts",
+    "fomo:demo": "node --experimental-strip-types --no-warnings fomo/src/cli.ts scan --demo --verbose",
+    "fomo:test": "node --experimental-strip-types --no-warnings --test fomo/test/*.test.ts",
+    "fomo:typecheck": "tsc -p fomo/tsconfig.json"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
