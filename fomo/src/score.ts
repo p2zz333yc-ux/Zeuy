@@ -4,6 +4,7 @@ import { analyzeCoherence, analyzeTiming } from './features/coherence.ts';
 import { analyzeOnchain } from './features/onchain.ts';
 import { analyzeRisk } from './features/risk.ts';
 import { analyzeSocial } from './features/social.ts';
+import type { AnnouncementContext } from './features/social.ts';
 import { classifyPhase } from './phase.ts';
 import type {
   Candidate,
@@ -22,6 +23,8 @@ export type EvaluationInput = {
   social: SocialBundle;
   history: HistoryPoint[];
   now: number;
+  /** Annonce récente d'un compte surveillé portant sur ce token, si elle existe. */
+  announcement?: AnnouncementContext;
 };
 
 /**
@@ -35,7 +38,7 @@ export type EvaluationInput = {
 export const evaluate = (input: EvaluationInput, cfg: Config = DEFAULT_CONFIG): Evaluation => {
   const { candidate, market, security, social: bundle, history, now } = input;
 
-  const social = analyzeSocial(bundle, now, cfg);
+  const social = analyzeSocial(bundle, now, cfg, input.announcement);
   const onchain = analyzeOnchain(market, cfg);
   const risk = analyzeRisk(market, security, cfg);
   const coherence = analyzeCoherence(social, onchain, history, cfg);

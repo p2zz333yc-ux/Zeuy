@@ -34,6 +34,43 @@ export const fetchBoostedTokens = async (opts: DexOptions = {}): Promise<
 };
 
 /**
+ * Recherche de pools par texte libre (ticker, nom, adresse).
+ *
+ * C'est le pont entre une annonce et un token réel : quand un compte annonce
+ * « $TICKER », le pool n'existe parfois que depuis quelques secondes et n'est
+ * dans aucun classement. La recherche par symbole est le seul moyen de le
+ * retrouver — au prix d'une ambiguïté qu'il faut ensuite lever, car n'importe
+ * qui peut déployer un token portant exactement le même symbole.
+ */
+export const searchPairs = async (
+  query: string,
+  opts: DexOptions = {},
+): Promise<MarketSnapshot[]> => {
+  const doFetch = opts.fetchImpl ?? fetch;
+  const url = `${opts.baseUrl ?? BASE}/latest/dex/search?q=${encodeURIComponent(query)}`;
+  const res = await doFetch(url);
+  if (!res.ok) return [];
+  const body = (await res.json()) as { pairs?: RawPair[] | null };
+
+  // Un token = une adresse ; on regroupe les pools par adresse de base.
+  const byAddress = new Map<string, RawPair[]>();
+  for (const p of body.pairs ?? []) {
+    const addr = p.baseToken?.address;
+    if (!addr) continue;
+    const list = byAddress.get(addr);
+    if (list) list.push(p);
+    else byAddress.set(addr, [p]);
+  }
+
+  const out: MarketSnapshot[] = [];
+  for (const [addr, pairs] of byAddress) {
+    const snap = snapshotFromPairs(pairs, addr);
+    if (snap) out.push(snap);
+  }
+  return out;
+};
+
+/**
  * Un token peut avoir plusieurs pools. On retient celui qui porte la liquidité :
  * c'est lui qui détermine le prix réellement exécutable.
  */

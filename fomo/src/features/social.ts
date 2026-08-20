@@ -1,6 +1,6 @@
 import type { Config } from '../config.ts';
 import type { Author, Signal, SocialBundle, Tweet } from '../types.ts';
-import { clamp, jaccard, logScale, logistic, median, ratio, robustZ } from '../util/math.ts';
+import { clamp, jaccard, logScale, logistic, median, ratio, robustZ, weightedMean } from '../util/math.ts';
 
 export type SocialAnalysis = {
   signals: Signal[];
@@ -93,10 +93,14 @@ const reachOf = (a: Author | undefined, now: number, cfg: Config): number => {
   return base * (1 - botLikelihood(a, now, cfg));
 };
 
+/** Annonce récente rattachée au token, issue de la piste « comptes surveillés ». */
+export type AnnouncementContext = { strength: number; label: string };
+
 export const analyzeSocial = (
   bundle: SocialBundle,
   now: number,
   cfg: Config,
+  announcement?: AnnouncementContext,
 ): SocialAnalysis => {
   const buckets = bucketize(bundle.tweets, now, cfg.bucketMs, cfg.lookbackMs);
   const counts = buckets.map((b) => b.length);
@@ -175,17 +179,30 @@ export const analyzeSocial = (
     sig('social.novelty', novelty, novelty, `${activeBuckets} buckets actifs depuis le début`),
   ];
 
-  // L'authenticité est multiplicative et non additive : un score social
+  // 10. Annonce d'un compte surveillé. Ce signal ne se déduit pas des mentions :
+  //     il arrive AVANT elles, et c'est précisément ce qui le rend utile. Un
+  //     token sans historique social peut ainsi ressortir dès la première passe.
+  if (announcement) {
+    signals.push(sig('social.annonce', announcement.strength, announcement.strength, announcement.label));
+  }
+
+  // Moyenne pondérée plutôt que somme codée en dur : les poids se renormalisent
+  // tout seuls, ce qui permet d'ajouter le signal d'annonce quand il existe sans
+  // déséquilibrer les tokens pour lesquels il n'y en a pas.
+  const additive = weightedMean([
+    [volumeScore, 0.1],
+    [velocityScore, 0.2],
+    [accelScore, 0.2],
+    [spreadScore, 0.15],
+    [reachScore, 0.1],
+    [kolScore, 0.15],
+    [depthScore, 0.05],
+    [novelty, 0.05],
+    [announcement?.strength ?? 0, announcement ? 0.25 : 0],
+  ]);
+
+  // L'authenticité reste multiplicative et non additive : un score social
   // magnifique porté par une ferme de bots ne vaut rien du tout.
-  const additive =
-    0.1 * volumeScore +
-    0.2 * velocityScore +
-    0.2 * accelScore +
-    0.15 * spreadScore +
-    0.1 * reachScore +
-    0.15 * kolScore +
-    0.05 * depthScore +
-    0.05 * novelty;
 
   const known = last.filter((t) => bundle.authors.has(t.authorId)).length;
   const coverage = mentionsNow === 0 ? 0 : known / mentionsNow;

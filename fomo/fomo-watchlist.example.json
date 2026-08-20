@@ -1,0 +1,16 @@
+{
+  "_lisez_moi": [
+    "Copiez ce fichier en fomo-watchlist.json et remplissez-le vous-même.",
+    "OFFICIAL : compte officiel d'une personnalité, d'une marque ou d'une institution.",
+    "KOL      : influenceur crypto établi.",
+    "COMMUNITY: compte communautaire ou agrégateur de lancements.",
+    "Le champ id est rempli automatiquement par la commande `resolve` : c'est lui",
+    "qui fait foi, car un pseudonyme peut être changé ou revendu.",
+    "Cette liste est vide volontairement : y inscrire des noms réels reviendrait à",
+    "suggérer que ces personnes lancent des tokens."
+  ],
+  "accounts": [
+    { "username": "exemple_officiel", "tier": "OFFICIAL", "label": "À remplacer" },
+    { "username": "exemple_kol", "tier": "KOL", "label": "À remplacer" }
+  ]
+}

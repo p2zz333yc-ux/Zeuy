@@ -81,6 +81,67 @@ export class XClient {
 
     return { tweets, authors };
   }
+
+  /**
+   * Résout des pseudonymes en identifiants stables.
+   *
+   * Indispensable : un pseudonyme se change en deux clics, l'identifiant non.
+   * Une watchlist stockée en pseudonymes est une watchlist qui suivra un jour
+   * un compte revendu à quelqu'un d'autre.
+   */
+  async getUsersByUsernames(usernames: string[]): Promise<Author[]> {
+    const out: Author[] = [];
+    // L'endpoint accepte 100 pseudonymes par appel.
+    for (let i = 0; i < usernames.length; i += 100) {
+      const chunk = usernames.slice(i, i + 100).map((u) => u.replace(/^@/, ''));
+      const url = new URL(`${this.baseUrl}/users/by`);
+      url.searchParams.set('usernames', chunk.join(','));
+      url.searchParams.set('user.fields', USER_FIELDS);
+      const body = await this.request<{ data?: RawUser[] }>(url);
+      for (const u of body?.data ?? []) out.push(toAuthor(u));
+    }
+    return out;
+  }
+
+  /**
+   * Derniers tweets d'un compte précis.
+   *
+   * C'est la voie qui compte pour les annonces : la recherche par mots-clés a
+   * plusieurs minutes de latence d'indexation, la timeline d'un compte non.
+   * Sur ce type d'événement, quelques minutes décident de tout.
+   */
+  async getUserTweets(userId: string, since: number): Promise<SearchResult> {
+    const tweets: Tweet[] = [];
+    const authors = new Map<string, Author>();
+    const url = new URL(`${this.baseUrl}/users/${userId}/tweets`);
+    url.searchParams.set('max_results', '20');
+    url.searchParams.set('tweet.fields', TWEET_FIELDS);
+    url.searchParams.set('expansions', 'author_id');
+    url.searchParams.set('user.fields', USER_FIELDS);
+    url.searchParams.set('start_time', new Date(since).toISOString());
+    // Les réponses et retweets ne sont pas des annonces.
+    url.searchParams.set('exclude', 'replies,retweets');
+
+    const body = await this.request<XSearchResponse>(url);
+    for (const u of body?.includes?.users ?? []) authors.set(u.id, toAuthor(u));
+    for (const t of body?.data ?? []) tweets.push(toTweet(t));
+    return { tweets, authors };
+  }
+
+  /** Requête unitaire, avec la même gestion de quota que la recherche paginée. */
+  private async request<T>(url: URL): Promise<T | null> {
+    if (Date.now() < this.rateLimitedUntil) return null;
+    const res = await this.doFetch(url, { headers: { Authorization: `Bearer ${this.token}` } });
+    if (res.status === 429) {
+      const reset = Number(res.headers.get('x-rate-limit-reset') ?? 0);
+      this.rateLimitedUntil = reset > 0 ? reset * 1000 : Date.now() + 60_000;
+      return null;
+    }
+    if (!res.ok) {
+      throw new Error(`X API ${res.status}: ${await res.text().catch(() => res.statusText)}`);
+    }
+    return (await res.json()) as T;
+  }
 }
 
 /**

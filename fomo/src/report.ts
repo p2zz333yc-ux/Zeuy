@@ -1,6 +1,7 @@
 import { usd } from './features/onchain.ts';
 import { phaseAdvice } from './phase.ts';
 import type { Evaluation, Phase } from './types.ts';
+import type { AnnouncementAlert, AnnouncementStatus } from './announcements.ts';
 import type { ScanResult } from './pipeline.ts';
 
 const PHASE_COLOR: Record<Phase, string> = {
@@ -148,3 +149,47 @@ const barHtml = (label: string, v: number): string =>
 
 const esc = (s: string): string =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
+
+const STATUS_COLOR: Record<AnnouncementStatus, string> = {
+  TOKEN_CONFIRME: '\x1b[92m',
+  TOKEN_A_VERIFIER: '\x1b[93m',
+  CLONES_MULTIPLES: '\x1b[91m',
+  PAS_ENCORE_DE_TOKEN: '\x1b[96m',
+  IGNOREE: '\x1b[90m',
+};
+
+/** Rendu de la piste « annonces ». */
+export const renderAnnouncements = (alerts: AnnouncementAlert[]): string => {
+  if (alerts.length === 0) return 'Aucune annonce détectée sur la fenêtre.';
+
+  const lines: string[] = [`${BOLD}Annonces détectées (${alerts.length})${RESET}`, ''];
+
+  for (const a of alerts) {
+    const { announcement: ann } = a;
+    lines.push(
+      `${STATUS_COLOR[a.status]}${BOLD}[${a.status}]${RESET} ${ann.kind} — @${ann.author.username} ` +
+        `(force ${Math.round(ann.strength * 100)}/100, ${Math.round((Date.now() - ann.tweet.createdAt) / 60_000)} min)`,
+    );
+    lines.push(`  "${ann.tweet.text.replace(/\s+/g, ' ').slice(0, 160)}"`);
+
+    if (ann.tickers.length > 0) lines.push(`  tickers : ${ann.tickers.map((t) => `$${t}`).join(', ')}`);
+
+    for (const w of ann.warnings) {
+      lines.push(`  ${w.fatal ? '[BLOQUANT]' : '[PRUDENCE]'} ${w.message}`);
+    }
+
+    for (const m of a.matches) {
+      lines.push(
+        `  -> ${m.market.symbol} ${m.market.chain}:${m.market.address}` +
+          ` (${Math.round(m.confidence * 100)}% · ${m.trust})`,
+      );
+      lines.push(`     liquidité ${usd(m.market.liquidityUsd)}, FDV ${usd(m.market.fdvUsd)}`);
+      for (const r of m.reasons) lines.push(`     - ${r}`);
+    }
+
+    lines.push(`  => ${a.advice}`);
+    lines.push('');
+  }
+
+  return lines.join('\n');
+};

@@ -23,5 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# Historique du scanner FOMO
+# Fichiers d'état du scanner FOMO
 .fomo-history.json
+.fomo-seen.json
+.fomo-announcements.json
+fomo-watchlist.json

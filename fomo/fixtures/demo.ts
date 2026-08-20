@@ -1,5 +1,9 @@
 import type { Fixture } from '../src/providers.ts';
+import type { WatchedAccount } from '../src/watchlist.ts';
 import type { Author, Tweet } from '../src/types.ts';
+
+const HOPE_CA = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
+const CLONE_CA = 'CLoneHopeFake9999999999999999999999999999999';
 
 /**
  * Quatre scénarios synthétiques qui couvrent les cas que le moteur doit savoir
@@ -13,7 +17,125 @@ export const demoFixture = (now: number): Fixture => ({
     botFarmToken(now),
     rugToken(now),
     euphoriaToken(now),
+    cloneToken(now),
   ],
+  timelines: { 'kol-1': officialTimeline(now) },
+});
+
+/** Watchlist de démonstration : un seul compte, de niveau OFFICIAL. */
+export const demoWatchlist = (): WatchedAccount[] => [
+  { id: 'kol-1', username: 'compte_officiel', tier: 'OFFICIAL', label: 'Compte officiel (démo)' },
+];
+
+/**
+ * Tweets récoltés hors watchlist.
+ *
+ * Deux minutes après une vraie annonce, c'est ce flux-là qui se remplit de faux
+ * comptes et de faux contrats : c'est donc lui qui doit être filtré, pas la
+ * watchlist qui est sûre par construction.
+ */
+export const demoExtraTweets = (now: number): { tweets: Tweet[]; authors: Map<string, Author> } => {
+  // Usurpateur : « 0 » à la place du « o » dans le pseudonyme.
+  const impostor = author('fake-1', 'compte_0fficiel', 8_400, 30, now - 4 * 864e5);
+  // Opportuniste : compte réel mais sans autorité, qui relaie un contrat clone.
+  const opportunist = author('opp-1', 'alpha_calls', 12_000, 900, now - 600 * 864e5);
+
+  return {
+    tweets: [
+      tweet(
+        'fake-tweet',
+        'fake-1',
+        now - 6 * MIN,
+        `officiel : $HOPE est lancé, le contrat est ${CLONE_CA}`,
+        900, 300, 40, 12,
+      ),
+      tweet(
+        'opp-tweet',
+        'opp-1',
+        now - 5 * MIN,
+        `$HOPE vient d'être annoncé, le contrat circule déjà ${CLONE_CA}`,
+        400, 90, 30, 8,
+      ),
+    ],
+    authors: new Map([
+      [impostor.id, impostor],
+      [opportunist.id, opportunist],
+    ]),
+  };
+};
+
+/**
+ * Timeline du compte officiel : huit tweets sans rapport avec la crypto, puis
+ * l'annonce. C'est ce contraste que mesure le signal de surprise — un compte
+ * qui pousse un token par jour n'apprend rien à personne.
+ */
+const officialTimeline = (now: number): { tweets: Tweet[]; author: Author } => {
+  const ordinary = [
+    'merci à toutes les équipes pour le travail de cette semaine',
+    'belle soirée hier, beaucoup de monde et une ambiance excellente',
+    'nous publierons le calendrier complet dans les prochains jours',
+    'interview demain matin, les détails suivront',
+    'félicitations à l’équipe pour ce résultat',
+    'quelques photos des coulisses de la journée',
+    'le déplacement de la semaine prochaine est confirmé',
+    'répondrai aux questions les plus fréquentes bientôt',
+  ].map((text, i) => tweet(`tl-${i}`, 'kol-1', now - (i + 1) * 12 * 3_600_000, text, 12_000, 2_000, 900, 200));
+
+  return {
+    author: OFFICIAL,
+    tweets: [
+      ...ordinary,
+      tweet(
+        'annonce-officielle',
+        'kol-1',
+        now - 9 * MIN,
+        `$HOPE est officiellement lancé. CA : ${HOPE_CA}`,
+        41_000, 12_000, 8_400, 3_100,
+      ),
+    ],
+  };
+};
+
+/**
+ * Le token clone : même symbole, déployé dans la foulée de l'annonce, liquidité
+ * dérisoire. Il n'existe que pour capter les acheteurs qui cherchent « $HOPE ».
+ */
+const cloneToken = (now: number) => ({
+  market: {
+    address: CLONE_CA,
+    chain: 'solana',
+    symbol: 'HOPE',
+    name: 'Hope',
+    fetchedAt: now,
+    priceUsd: 0.0004,
+    pairAgeMs: 7 * MIN,
+    liquidityUsd: 6_000,
+    fdvUsd: 240_000,
+    marketCapUsd: 240_000,
+    volume: { m5: 30_000, h1: 30_000, h6: 30_000, h24: 30_000 },
+    priceChangePct: { m5: 140, h1: 140, h6: 140, h24: 140 },
+    txns: {
+      m5: { buys: 300, sells: 20 },
+      h1: { buys: 300, sells: 20 },
+      h6: { buys: 300, sells: 20 },
+      h24: { buys: 300, sells: 20 },
+    },
+  },
+  security: {
+    address: CLONE_CA,
+    chain: 'solana',
+    mintRevoked: true,
+    freezeRevoked: true,
+    lpBurnedPct: 0,
+    top10Pct: 0.78,
+    devHoldingPct: 0.4,
+    devSold: false,
+    sellTaxPct: 0,
+    honeypot: false,
+  },
+  tweets: [],
+  authors: [],
+  kolIds: [],
 });
 
 const MIN = 60_000;
@@ -51,7 +173,7 @@ const organicText = (i: number): string =>
 /** Scénario 1 — allumage authentique porté par un gros compte. Le cas « TRUMP ». */
 const ignitionToken = (now: number) => {
   const authors: Author[] = [
-    author('kol-1', 'compte_officiel', 3_400_000, 120, now - 1200 * 864e5, true),
+    OFFICIAL,
     ...Array.from({ length: 60 }, (_, i) =>
       author(`org-${i}`, `trader${i}`, 400 + i * 350, 800, now - (200 + i * 5) * 864e5),
     ),
@@ -285,6 +407,18 @@ const euphoriaToken = (now: number) => {
     authors,
     kolIds: [],
   };
+};
+
+/** Le compte surveillé de la démonstration, partagé par les deux pistes. */
+const OFFICIAL: Author = {
+  id: 'kol-1',
+  username: 'compte_officiel',
+  followers: 3_400_000,
+  following: 120,
+  tweetCount: 4_800,
+  createdAt: Date.now() - 1200 * 864e5,
+  verified: true,
+  hasDefaultAvatar: false,
 };
 
 const tweet = (

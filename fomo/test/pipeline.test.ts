@@ -137,3 +137,54 @@ test('un premier démarrage sans fichier d’historique ne lève pas', async () 
   await store.load();
   assert.deepEqual(store.addresses(), []);
 });
+
+test('un token annoncé entre dans la passe malgré l’absence de volume', async () => {
+  const fixture = demoFixture(now);
+  // Token fraîchement déployé : liquidité suffisante, mais aucune heure de volume.
+  const market = fixture.tokens[0].market as Record<string, unknown>;
+  market.volume = { m5: 0, h1: 0, h6: 0, h24: 0 };
+  const address = market.address as string;
+
+  const dir = await mkdtemp(join(tmpdir(), 'fomo-'));
+  const withoutSeed = await scan({
+    providers: buildFixtureProviders(fixture),
+    store: new HistoryStore(join(dir, 'a.json')),
+    now,
+  });
+  const withSeed = await scan({
+    providers: buildFixtureProviders(fixture),
+    store: new HistoryStore(join(dir, 'b.json')),
+    seeds: [{ address, chain: 'solana' }],
+    now,
+  });
+  await rm(dir, { recursive: true, force: true });
+
+  assert.ok(withoutSeed.skipped.some((s) => s.address === address && s.reason.includes('volume')));
+  assert.ok(withSeed.evaluated.some((e) => e.candidate.address === address));
+});
+
+test('une annonce rattachée relève le bloc social du token', async () => {
+  const fixture = demoFixture(now);
+  const address = fixture.tokens[0].market.address as string;
+  const dir = await mkdtemp(join(tmpdir(), 'fomo-'));
+
+  const base = await scan({
+    providers: buildFixtureProviders(fixture),
+    store: new HistoryStore(join(dir, 'a.json')),
+    kolIds: new Set(),
+    now,
+  });
+  const boosted = await scan({
+    providers: buildFixtureProviders(fixture),
+    store: new HistoryStore(join(dir, 'b.json')),
+    kolIds: new Set(),
+    announcements: new Map([[address, { strength: 0.95, label: 'annonce de démonstration' }]]),
+    now,
+  });
+  await rm(dir, { recursive: true, force: true });
+
+  const before = bySymbol(base.evaluated, 'HOPE');
+  const after = bySymbol(boosted.evaluated, 'HOPE');
+  assert.ok(after.blocks.social > before.blocks.social);
+  assert.ok(after.signals.some((s) => s.key === 'social.annonce'));
+});

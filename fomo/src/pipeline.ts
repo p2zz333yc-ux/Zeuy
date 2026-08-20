@@ -3,6 +3,7 @@ import { DEFAULT_CONFIG } from './config.ts';
 import { ACTIONABLE_PHASES } from './phase.ts';
 import { evaluate, rank } from './score.ts';
 import type { HistoryStore } from './store.ts';
+import type { AnnouncementContext } from './features/social.ts';
 import type {
   Author,
   Candidate,
@@ -42,6 +43,14 @@ export type ScanOptions = {
   now?: number;
   /** Nombre maximum de candidats enrichis par passe (budget d'appels API). */
   maxCandidates?: number;
+  /**
+   * Adresses injectées d'office dans la passe, sans passer par la découverte.
+   * Sert à faire entrer un token repéré par la piste « annonces » : il n'a
+   * souvent ni volume ni classement, donc aucune chance d'être découvert seul.
+   */
+  seeds?: Array<{ address: string; chain: Chain }>;
+  /** Annonces rattachées à des adresses, indexées par adresse. */
+  announcements?: Map<string, AnnouncementContext>;
   /** Journalisation optionnelle. */
   onProgress?: (message: string) => void;
 };
@@ -72,13 +81,17 @@ export const scan = async (opts: ScanOptions): Promise<ScanResult> => {
   // On re-scanne aussi ce qu'on suivait déjà : un token peut s'allumer une heure
   // après sa découverte, et on perdrait son historique en l'oubliant.
   const tracked = opts.store.addresses().map((address) => ({ address, chain: 'unknown' as Chain }));
+  const seeds = opts.seeds ?? [];
   const unique = new Map<string, Chain>();
-  for (const d of [...discovered, ...tracked]) {
+  for (const d of [...seeds, ...discovered, ...tracked]) {
     if (!unique.has(d.address)) unique.set(d.address, d.chain);
   }
-  log(`${unique.size} adresses à examiner (${discovered.length} découvertes, ${tracked.length} suivies)`);
+  log(
+    `${unique.size} adresses à examiner (${seeds.length} annoncées, ${discovered.length} découvertes, ${tracked.length} suivies)`,
+  );
 
   // Étape 1 — présélection sur données de marché uniquement (gratuites, rapides).
+  const seedAddresses = new Set(seeds.map((s) => s.address));
   const preselected: Array<{ market: MarketSnapshot }> = [];
   for (const [address, chain] of unique) {
     const market = await opts.providers.market(address, chain);
@@ -90,15 +103,21 @@ export const scan = async (opts: ScanOptions): Promise<ScanResult> => {
       skipped.push({ address, reason: `chaîne ${market.chain} non surveillée` });
       continue;
     }
+    // La liquidité reste éliminatoire même pour un token annoncé : sans elle,
+    // la position est intenable quelle que soit la qualité du signal.
     if (market.liquidityUsd < cfg.onchain.minLiquidityUsd) {
       skipped.push({ address, reason: `liquidité insuffisante (${Math.round(market.liquidityUsd)} $)` });
       continue;
     }
-    if (market.volume.h1 <= 0) {
+    // Les deux filtres suivants supposent un token déjà en circulation. Un token
+    // annoncé il y a quatre-vingt-dix secondes n'a pas encore d'heure de volume :
+    // les lui appliquer reviendrait à jeter exactement ce qu'on cherche.
+    const isSeed = seedAddresses.has(address);
+    if (!isSeed && market.volume.h1 <= 0) {
       skipped.push({ address, reason: 'aucun volume sur 1 h' });
       continue;
     }
-    if (market.fdvUsd > cfg.onchain.fdvLateUsd) {
+    if (!isSeed && market.fdvUsd > cfg.onchain.fdvLateUsd) {
       skipped.push({ address, reason: 'FDV déjà trop élevée' });
       continue;
     }
@@ -107,9 +126,16 @@ export const scan = async (opts: ScanOptions): Promise<ScanResult> => {
 
   // Étape 2 — on classe la présélection par intensité brute et on ne dépense
   // le budget social que sur la tête de liste.
-  preselected.sort((a, b) => heat(b.market) - heat(a.market));
-  const shortlist = preselected.slice(0, maxCandidates);
-  for (const p of preselected.slice(maxCandidates)) {
+  // Un token issu d'une annonce n'a par construction ni volume ni classement :
+  // le trier sur sa « chaleur » le renverrait systématiquement en fin de liste,
+  // c'est-à-dire hors budget, et la piste annonces ne servirait à rien.
+  const seeded = preselected.filter((p) => seedAddresses.has(p.market.address));
+  const rest = preselected.filter((p) => !seedAddresses.has(p.market.address));
+  rest.sort((a, b) => heat(b.market) - heat(a.market));
+
+  const budget = Math.max(0, maxCandidates - seeded.length);
+  const shortlist = [...seeded, ...rest.slice(0, budget)];
+  for (const p of rest.slice(budget)) {
     skipped.push({ address: p.market.address, reason: 'hors budget de la passe' });
   }
   log(`${shortlist.length} candidats enrichis sur ${preselected.length} présélectionnés`);
@@ -146,6 +172,7 @@ export const scan = async (opts: ScanOptions): Promise<ScanResult> => {
         },
         history,
         now,
+        announcement: opts.announcements?.get(market.address),
       },
       cfg,
     );

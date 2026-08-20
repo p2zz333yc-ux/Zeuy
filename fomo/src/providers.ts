@@ -1,7 +1,8 @@
 import type { Config } from './config.ts';
-import { fetchBoostedTokens, fetchTokenSnapshot } from './sources/dexscreener.ts';
+import { fetchBoostedTokens, fetchTokenSnapshot, searchPairs } from './sources/dexscreener.ts';
 import { fetchSecurity } from './sources/security.ts';
 import { XClient, buildTokenQuery, extractAddresses } from './sources/x.ts';
+import type { AnnouncementProviders } from './announcements.ts';
 import type { Providers } from './pipeline.ts';
 import type { Author, Chain, Tweet } from './types.ts';
 
@@ -77,11 +78,30 @@ export const buildLiveProviders = (opts: LiveOptions): Providers => {
 };
 
 /**
+ * Providers de la piste « annonces ».
+ *
+ * Séparés de ceux du scanner : ils interrogent des timelines de comptes précis
+ * et la recherche de pools par ticker, là où le scanner interroge la recherche
+ * par mots-clés et les classements. Ce ne sont ni les mêmes endpoints, ni les
+ * mêmes quotas.
+ */
+export const buildLiveAnnouncementProviders = (bearerToken: string): AnnouncementProviders => {
+  const x = new XClient({ bearerToken });
+  return {
+    timeline: (userId, since) => x.getUserTweets(userId, since),
+    searchToken: (query) => searchPairs(query).catch(() => []),
+    market: (address) => fetchTokenSnapshot(address).catch(() => null),
+  };
+};
+
+/**
  * Providers hors ligne, alimentés par un fichier de fixtures.
  * Sert aux tests, à la calibration et à la démonstration sans clé d'API.
  */
 export type Fixture = {
   now: number;
+  /** Timelines des comptes surveillés, indexées par identifiant. */
+  timelines?: Record<string, { tweets: Tweet[]; author: Author }>;
   tokens: Array<{
     market: Record<string, unknown>;
     security: Record<string, unknown> | null;
@@ -111,5 +131,30 @@ export const buildFixtureProviders = (fixture: Fixture): Providers => ({
       tweets: t?.tweets ?? [],
       authors: new Map((t?.authors ?? []).map((a) => [a.id, a])),
     };
+  },
+});
+
+export const buildFixtureAnnouncementProviders = (fixture: Fixture): AnnouncementProviders => ({
+  timeline: async (userId, since) => {
+    const entry = fixture.timelines?.[userId];
+    if (!entry) return { tweets: [], authors: new Map<string, Author>() };
+    return {
+      tweets: entry.tweets.filter((t) => t.createdAt >= since),
+      authors: new Map([[entry.author.id, entry.author]]),
+    };
+  },
+  searchToken: async (query) => {
+    const q = query.toUpperCase();
+    return fixture.tokens
+      .filter(
+        (t) =>
+          String(t.market.symbol).toUpperCase() === q ||
+          String(t.market.name).toUpperCase().includes(q),
+      )
+      .map((t) => t.market as never);
+  },
+  market: async (address) => {
+    const t = fixture.tokens.find((x) => x.market.address === address);
+    return t ? (t.market as never) : null;
   },
 });

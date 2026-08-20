@@ -1,12 +1,19 @@
 # Scanner FOMO — détection d'allumage de memecoins
 
-Moteur de détection qui croise le **signal social X (Twitter)** et la **confirmation
-on-chain** pour repérer, quelques minutes avant le marché, les tokens dont l'attention
-accélère — puis élimine ceux dont le contrat est un piège.
+Moteur de détection à **deux pistes**, toutes deux branchées sur X (Twitter) :
+
+1. **Piste annonces** — surveille des comptes précis et détecte l'annonce elle-même,
+   souvent *avant* que le token existe. C'est le mécanisme des cas type TRUMP.
+2. **Piste sociale** — mesure l'accélération de l'attention sur les tokens déjà en
+   circulation, et la croise avec la confirmation on-chain.
+
+Les deux se terminent par les mêmes verrous de sécurité, qui éliminent les contrats
+piégés et les faux contrats publiés dans le sillage des vraies annonces.
 
 ```bash
-npm run fomo:demo     # démonstration sur 4 scénarios synthétiques, sans aucune clé
-npm run fomo:test     # 27 tests
+npm run fomo:demo       # démonstration complète, sans aucune clé
+npm run fomo:announce   # piste annonces seule
+npm run fomo:test       # 44 tests
 ```
 
 ---
@@ -36,13 +43,23 @@ grande majorité des pertes.
 ## Architecture
 
 ```
+PISTE ANNONCES
+timelines des comptes surveillés  ->  détection d'annonce  ->  rattachement à un token
+                                       (type, portée,           (adresse confirmée ?
+                                        surprise, anti-usurpation)  clones ?)
+                                                    |
+                                                    v  injection en « graine »
+PISTE SOCIALE
 découverte  ->  présélection  ->  enrichissement  ->  score  ->  phase  ->  alerte
-(X + DEX)      (gratuit)          (X + audit)       (0-100)   (7 états)
+(X + DEX)      (gratuit)          (X + audit)        (0-100)    (7 états)
 ```
 
 | Fichier | Rôle |
 |---|---|
-| `src/sources/x.ts` | Client X API v2, requêtes, extraction d'adresses et de cashtags |
+| `src/watchlist.ts` | Comptes surveillés, résolution pseudonyme -> identifiant |
+| `src/features/announcement.ts` | Détection d'annonce, surprise, contrôles anti-usurpation |
+| `src/announcements.ts` | Piste annonces : timelines -> annonce -> token |
+| `src/sources/x.ts` | Client X API v2 : recherche, timelines, résolution de comptes |
 | `src/sources/dexscreener.ts` | Prix, liquidité, FDV, volumes, transactions |
 | `src/sources/security.ts` | Audit contrat : rugcheck (Solana), GoPlus (EVM) |
 | `src/features/social.ts` | 9 signaux sociaux + détection de bots |
@@ -56,7 +73,77 @@ découverte  ->  présélection  ->  enrichissement  ->  score  ->  phase  ->  a
 
 ---
 
-## L'algorithme
+## Piste 1 — les annonces
+
+C'est là que se joue le cas TRUMP, et c'est précisément ce qu'un compteur de mentions
+ne peut pas voir : au moment de l'annonce, le token n'a **aucun historique**, donc
+aucune baseline, aucune vélocité, souvent même pas de pool. Le signal n'est pas
+« beaucoup de gens en parlent » mais **« ce compte-là vient de dire ça »**.
+
+### Ce qui fait la force d'une annonce
+
+| Signal | Poids | Pourquoi |
+|---|---|---|
+| **type** | ×1 | `CA_DROP` (adresse publiée) > `LAUNCH` > `TICKER_TEASE` > `ENDORSEMENT`. Une adresse est immédiatement tradable, sans interprétation. |
+| **source** | 0.35 | Niveau du compte dans la watchlist : `OFFICIAL` 1.0, `KOL` 0.75, `COMMUNITY` 0.5, hors liste 0.3. |
+| **portée** | 0.25 | log(abonnés). |
+| **surprise** | 0.25 | **Le signal le plus discriminant.** Part des tweets récents du compte qui parlent de crypto. Un influenceur qui pousse un token par jour a une affinité proche de 1 : sa énième annonce n'apprend rien. Un compte qui n'en a jamais parlé et qui poste soudain un contrat est l'événement rare qui déplace un marché. |
+| **fraîcheur** | 0.15 | À quinze minutes, le marché a lu. |
+
+La détection couvre le vocabulaire français et anglais (« officiellement lancé »,
+« now live », « CA : », « bientôt », « just deployed »...).
+
+### Relier l'annonce au bon token
+
+Deux chemins très inégaux :
+
+- **l'adresse figure dans le tweet du compte surveillé** — aucune ambiguïté,
+  `TOKEN_CONFIRME` ;
+- **seul un ticker est cité** — il faut chercher, et n'importe qui peut déployer un
+  token portant exactement le même symbole dans la minute qui suit.
+
+Le discriminant décisif est **la date de création du pool** : un pool né après
+l'annonce est le seul candidat plausible ; un token du même nom antérieur d'une
+semaine est un homonyme, quand ce n'est pas un piège tendu d'avance.
+
+| Statut | Signification |
+|---|---|
+| `TOKEN_CONFIRME` | adresse publiée par la source elle-même |
+| `CLONES_MULTIPLES` | plusieurs tokens portent le ticker : **aucun** n'est retenu |
+| `TOKEN_A_VERIFIER` | un seul candidat, mais son adresse ne vient pas de la source |
+| `PAS_ENCORE_DE_TOKEN` | signal le plus précoce possible, et le plus exposé |
+| `IGNOREE` | annonce bloquée par un contrôle anti-arnaque |
+
+### Contrôles anti-arnaque
+
+Suivre les annonces expose à un risque très concret : autour de chaque vraie annonce
+se crée instantanément une nappe de faux comptes et de faux contrats. **Sans ces
+contrôles, un détecteur d'annonces devient un détecteur d'arnaques.**
+
+| Contrôle | Effet |
+|---|---|
+| pseudonyme imitant un compte suivi (`compte_0fficiel` vs `compte_officiel`) | **bloquant** |
+| plusieurs adresses différentes dans le même tweet | **bloquant** |
+| compte de moins de 30 jours, hors watchlist | **bloquant** |
+| adresse publiée par un compte hors watchlist | signalé, non bloquant |
+
+La détection d'usurpation normalise les substitutions visuelles (`0`/`o`, `1`/`l`/`i`,
+`rn`/`m`), les suffixes ajoutés, et tolère une distance d'édition de 1.
+
+### Ce que l'annonce change pour le scanner
+
+Un token confirmé est injecté en **graine** dans la piste sociale : il contourne les
+filtres de présélection qui supposent un token déjà en circulation (pas d'heure de
+volume, pas de classement) — sinon on jetterait exactement ce qu'on cherche. Seule la
+liquidité reste éliminatoire, parce qu'une position intenable reste intenable.
+
+L'annonce devient alors un dixième signal social (`social.annonce`, poids 0.25), dont
+la force **décroît par demi-vie d'une heure** sur six heures : une annonce n'est
+traitée qu'une fois, mais ses effets durent bien au-delà de la passe qui l'a vue.
+
+---
+
+## Piste 2 — l'algorithme social + on-chain
 
 ### Forme de la formule
 
@@ -176,23 +263,62 @@ ancrées sur l'heure courante, donc le découpage en quarts d'heure se décale.)
 `TRAP` est le cas qui justifie toute l'architecture : ses blocs social (0.59) et
 on-chain (0.71) sont bons. Seuls les verrous l'éliminent.
 
+La piste annonces sur les mêmes fixtures :
+
+```
+[TOKEN_CONFIRME]   CA_DROP — @compte_officiel (force 95/100, 9 min)
+  "$HOPE est officiellement lancé. CA : 7xKXtg..."
+  -> HOPE solana:7xKXtg... (100% · CONFIRME_PAR_LA_SOURCE)
+
+[CLONES_MULTIPLES] CA_DROP — @alpha_calls (force 51/100, 5 min)
+  [PRUDENCE] adresse publiée par un compte hors watchlist : origine invérifiable
+  -> HOPE solana:CLoneH... (100% · CANDIDAT_NON_VERIFIE)  liquidité $6.0k
+  -> HOPE solana:7xKXtg... ( 55% · CANDIDAT_NON_VERIFIE)  liquidité $180.0k
+  => 2 tokens portent ce ticker. Aucun ne peut être retenu sans une adresse
+     publiée par la source elle-même.
+
+[IGNOREE]          CA_DROP — @compte_0fficiel (force 0/100, 6 min)
+  [BLOQUANT] @compte_0fficiel imite @compte_officiel sans être le compte suivi
+  [BLOQUANT] compte créé il y a 4 jours
+```
+
 ### En réel
 
+**1. Constituer la watchlist.** C'est le paramètre le plus déterminant de tout le
+système : le moteur ne peut détecter que les annonces des comptes qu'on lui demande
+de regarder.
+
 ```bash
-export X_BEARER_TOKEN="..."                    # X API v2, palier Basic minimum
-export FOMO_KOL_IDS="44196397,1234567890"      # identifiants des comptes d'influence
-export FOMO_WATCH_ACCOUNTS="compte1,compte2"   # comptes surveillés pour la découverte
+cp fomo/fomo-watchlist.example.json fomo-watchlist.json
+# éditer le fichier, puis résoudre les pseudonymes en identifiants stables
+npm run fomo -- resolve
+```
+
+Les identifiants sont conservés dans le fichier, et c'est eux qui font foi : un
+pseudonyme se change en deux clics, et un compte revendu ferait sinon suivre au
+scanner quelqu'un d'autre sans que rien ne le signale.
+
+**2. Lancer.**
+
+```bash
+export X_BEARER_TOKEN="..."                # X API v2, palier Basic minimum
+export FOMO_KOL_IDS="1234567890,..."       # identifiants pondérant le signal social
 
 npm run fomo -- watch --interval 300 --html rapport.html --verbose
+npm run fomo -- announce                   # piste annonces seule, plus légère en quota
 ```
 
 | Option | Effet |
 |---|---|
 | `--interval <s>` | intervalle entre deux passes (défaut 300) |
+| `--watchlist <f.json>` | comptes surveillés (défaut `fomo-watchlist.json`) |
 | `--config <f.json>` | surcharge des seuils |
 | `--store <f.json>` | historique persisté (défaut `.fomo-history.json`) |
+| `--seen <f.json>` | annonces déjà traitées, pour ne pas réalerter |
+| `--memory <f.json>` | annonces actives rattachées aux tokens |
 | `--html <f.html>` | rapport HTML autonome |
 | `--max <n>` | candidats enrichis par passe (budget d'appels API) |
+| `--no-announce` | désactive la piste annonces |
 | `--json` | sortie brute |
 
 ### Sources de données
@@ -200,6 +326,7 @@ npm run fomo -- watch --interval 300 --html rapport.html --verbose
 | Source | Clé | Coût | Note |
 |---|---|---|---|
 | **X API v2** | obligatoire | payant | Le palier gratuit **ne donne pas** accès à `search/recent`. Le scraping du site est contraire aux CGU et fait bannir l'IP en quelques minutes. |
+| **X — timelines** | même jeton | même quota | `users/:id/tweets`. Chemin privilégié pour les annonces : la recherche par mots-clés a plusieurs minutes de latence d'indexation, la timeline d'un compte non — et sur ce type d'événement, quelques minutes décident de tout. |
 | **Dexscreener** | non | gratuit | ~300 req/min |
 | **rugcheck.xyz** | non | gratuit | Solana |
 | **GoPlus Labs** | non | gratuit | EVM |
@@ -239,5 +366,12 @@ Sans cette étape, le score est un nombre bien présenté, rien de plus.
   meurent sans laisser de trace dans les données que l'on regarde.
 - **Les verrous ne couvrent pas tout.** Une LP brûlée n'empêche ni un dev de vendre
   son allocation, ni une équipe d'abandonner le projet.
+- **Une annonce authentique ne dit rien du contrat.** Les deux pistes sont
+  indépendantes : un compte parfaitement légitime peut annoncer un token dont la
+  structure est catastrophique. Un `TOKEN_CONFIRME` doit toujours repasser par le
+  scanner complet.
+- **Les contrôles anti-usurpation sont un filet, pas une preuve.** Ils attrapent les
+  imitations de pseudonyme et les tweets à plusieurs adresses, pas un compte
+  authentique réellement compromis.
 - **Rien ici n'est un conseil en investissement.** Le taux de perte sur cette classe
   d'actifs est extrêmement élevé, y compris sur des candidats bien notés.
